@@ -157,7 +157,7 @@ impl OfficeParserConfig {
 
     /// Whether to include headers and footers. This only operates on headers and footers in
     /// Word and Excel, not master slide content in PowerPoint.
-    /// Default: true
+    /// Default: false
     pub fn set_include_headers_and_footers(&self, val: bool) -> PyResult<Self> {
         let inner = self.0.clone().set_include_headers_and_footers(val);
         Ok(Self(inner))
@@ -248,7 +248,7 @@ impl TesseractOcrConfig {
     }
 
     /// Sets the color depth of the image to be processed.
-    /// Default: 8.
+    /// Default: 4.
     pub fn set_depth(&self, val: i32) -> PyResult<Self> {
         let inner = self.0.clone().set_depth(val);
         Ok(Self(inner))
@@ -272,7 +272,7 @@ impl TesseractOcrConfig {
     }
 
     /// Sets the maximum time in seconds that Tesseract should spend on OCR.
-    /// Default: 120.
+    /// Default: 130.
     pub fn set_timeout_seconds(&self, val: i32) -> PyResult<Self> {
         let inner = self.0.clone().set_timeout_seconds(val);
         Ok(Self(inner))

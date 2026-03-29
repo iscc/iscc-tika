@@ -24,6 +24,10 @@
   `org.apache.xerces.impl.msg.XMLMessages` was not included in the native image.
   Fixed for all platforms (Linux, macOS, Windows).
   ([extractous#56](https://github.com/yobix-ai/extractous/issues/56))
+* Fix incorrect default values in config docstrings: `include_headers_and_footers`
+  (true -> false), `depth` (8 -> 4), `timeout_seconds` (120 -> 130). Docstrings now
+  match the actual Tika defaults used in the `Default` implementations.
+  ([ProSync/extractous@3c6506b](https://github.com/ProSync/extractous/commit/3c6506b))
 * Prevent build panics when GraalVM header files are missing during artifact cleanup.
   Gracefully ignore missing `.h` files instead of unwrapping.
   ([ProSync/extractous@cac1e0f](https://github.com/ProSync/extractous/commit/cac1e0f))

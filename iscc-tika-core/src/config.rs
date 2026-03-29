@@ -166,7 +166,7 @@ impl OfficeParserConfig {
 
     /// Whether to include headers and footers. This only operates on headers and footers in
     /// Word and Excel, not master slide content in PowerPoint.
-    /// Default: true
+    /// Default: false
     pub fn set_include_headers_and_footers(mut self, val: bool) -> Self {
         self.include_headers_and_footers = val;
         self
@@ -264,7 +264,7 @@ impl TesseractOcrConfig {
     }
 
     /// Sets the color depth of the image to be processed.
-    /// Default: 8.
+    /// Default: 4.
     pub fn set_depth(mut self, val: i32) -> Self {
         self.depth = val;
         self
@@ -288,7 +288,7 @@ impl TesseractOcrConfig {
     }
 
     /// Sets the maximum time in seconds that Tesseract should spend on OCR.
-    /// Default: 120.
+    /// Default: 130.
     pub fn set_timeout_seconds(mut self, val: i32) -> Self {
         self.timeout_seconds = val;
         self
