@@ -156,7 +156,7 @@ fn gradle_build(
     println!("Using GraalVM JDK found at {}", graalvm_home.display());
     println!("Building tika_native libs this might take a while ... Please be patient!!");
 
-    if is_dir_updated(&tika_native_source_dir, &tika_native_dir) {
+    if is_dir_updated(tika_native_source_dir, &tika_native_dir) {
         println!("Lib tika_native files were updated");
         fs_extra::dir::remove(&tika_native_dir).ok();
     }
