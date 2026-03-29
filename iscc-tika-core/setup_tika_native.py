@@ -176,10 +176,20 @@ def install_graalvm(install_dir: Path, target_os: str, target_arch: str) -> Path
     return graalvm_home
 
 
+def safe_copytree(src: Path, dest: Path) -> None:
+    """Copy directory tree, ignoring EPERM on directory metadata (Docker volumes)."""
+    try:
+        shutil.copytree(src, dest, dirs_exist_ok=True)
+    except shutil.Error as exc:
+        non_perm = [e for e in exc.args[0] if "Operation not permitted" not in str(e)]
+        if non_perm:
+            raise shutil.Error(non_perm) from exc
+
+
 def copy_build_artifacts(from_path: Path, to_dirs: list[Path], clean: bool) -> None:
     """Copy build artifacts to one or more directories, optionally removing headers."""
     for dest in to_dirs:
-        shutil.copytree(from_path, dest, dirs_exist_ok=True)
+        safe_copytree(from_path, dest)
         if clean:
             for header in HEADER_FILES:
                 path = dest / header
