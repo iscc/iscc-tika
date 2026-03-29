@@ -98,7 +98,7 @@ repos:
         pass_filenames: false
       - id: pytest
         name: Python tests
-        entry: bash -c 'cd bindings/iscc-tika-python && pytest -s --timeout=120'
+        entry: bash -c 'cd bindings/iscc-tika-python && uv run pytest -s --timeout=120'
         language: system
         always_run: true
         stages: [pre-push]

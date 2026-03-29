@@ -65,7 +65,7 @@ impl StreamReader {
                     Ok(byte_array)
                 } else {
                     // Create a new PyByteArray from the buffer
-                    let new_byte_array = PyByteArray::new_bound(py, self.buffer.as_slice());
+                    let new_byte_array = PyByteArray::new(py, self.buffer.as_slice());
                     self.py_bytes = Some(new_byte_array.clone().unbind());
 
                     Ok(new_byte_array)
@@ -95,6 +95,12 @@ impl StreamReader {
 /// Create a new `Extractor` with the default configuration.
 #[pyclass]
 pub struct Extractor(ecore::Extractor);
+
+impl Default for Extractor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[pymethods]
 impl Extractor {
@@ -200,7 +206,7 @@ impl Extractor {
     ) -> PyResult<(StreamReader, PyObject)> {
         let (reader, metadata) = self
             .0
-            .extract_url(&url)
+            .extract_url(url)
             .map_err(|e| PyErr::new::<PyTypeError, _>(format!("{:?}", e)))?;
 
         // Create a new `StreamReader` with initial buffer capacity of ecore::DEFAULT_BUF_SIZE bytes
@@ -274,7 +280,7 @@ fn metadata_hashmap_to_pydict<'py>(
     py: Python<'py>,
     hashmap: &HashMap<String, Vec<String>>,
 ) -> Result<Bound<'py, PyDict>, PyErr> {
-    let pydict = PyDict::new_bound(py);
+    let pydict = PyDict::new(py);
     for (key, value) in hashmap {
         pydict
             .set_item(key, value)

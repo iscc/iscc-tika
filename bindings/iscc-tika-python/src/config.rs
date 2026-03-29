@@ -39,6 +39,12 @@ impl From<PdfParserConfig> for ecore::PdfParserConfig {
     }
 }
 
+impl Default for PdfParserConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[pymethods]
 impl PdfParserConfig {
     /// Creates a new instance of PdfParserConfig with default settings.
@@ -112,6 +118,12 @@ pub struct OfficeParserConfig(ecore::OfficeParserConfig);
 impl From<OfficeParserConfig> for ecore::OfficeParserConfig {
     fn from(config: OfficeParserConfig) -> Self {
         config.0
+    }
+}
+
+impl Default for OfficeParserConfig {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -222,6 +234,12 @@ pub struct TesseractOcrConfig(ecore::TesseractOcrConfig);
 impl From<TesseractOcrConfig> for ecore::TesseractOcrConfig {
     fn from(config: TesseractOcrConfig) -> Self {
         config.0
+    }
+}
+
+impl Default for TesseractOcrConfig {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

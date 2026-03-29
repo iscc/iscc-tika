@@ -82,4 +82,4 @@ testpaths = ["tests"]
 timeout = 120
 
 [dependency-groups]
-dev = ["lxml>=6.0.2"]
+dev = ["lxml>=6.0.2", "pytest>=8.0", "pytest-timeout>=2.3", "scikit-learn>=1.5"]
