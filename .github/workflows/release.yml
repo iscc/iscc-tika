@@ -1,0 +1,272 @@
+---
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Release version (e.g. 0.2.1). Validates against Cargo.toml/pyproject.toml
+          and publishes to all registries. Leave empty for test builds only.
+        type: string
+        default: ''
+      crates-io:
+        description: Publish iscc-tika to crates.io
+        type: boolean
+        default: false
+      pypi:
+        description: Publish to PyPI (without version validation)
+        type: boolean
+        default: false
+      testpypi:
+        description: Publish to TestPyPI
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: release
+  cancel-in-progress: false  # Never cancel a release in progress
+jobs:
+  validate:
+    name: Validate version
+    if: inputs.version != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version matches
+        run: |
+          CORE_VERSION=$(grep -m1 '^version' iscc-tika-core/Cargo.toml | sed 's/.*"\(.*\)"/\1/')
+          PY_VERSION=$(grep -m1 "^version" bindings/iscc-tika-python/pyproject.toml | sed "s/.*'\(.*\)'/\1/")
+          echo "Core version: $CORE_VERSION"
+          echo "Python version: $PY_VERSION"
+          echo "Input version: ${{ inputs.version }}"
+          FAIL=false
+          if [ "$CORE_VERSION" != "${{ inputs.version }}" ]; then
+            echo "::error::Core Cargo.toml version ($CORE_VERSION) != input version (${{ inputs.version }})"
+            FAIL=true
+          fi
+          if [ "$PY_VERSION" != "${{ inputs.version }}" ]; then
+            echo "::error::Python pyproject.toml version ($PY_VERSION) != input version (${{ inputs.version }})"
+            FAIL=true
+          fi
+          if [ "$FAIL" = "true" ]; then exit 1; fi
+  publish-crates-io:
+    name: Publish to crates.io
+    needs: [validate]
+    if: inputs.crates-io
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(grep -m1 '^version' iscc-tika-core/Cargo.toml | sed 's/.*"\(.*\)"/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Check version on registry
+        id: check
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if cargo info iscc-tika 2>/dev/null | grep -q "version: $VERSION"; then
+            echo "Version $VERSION already published to crates.io, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run tests
+        if: steps.check.outputs.skip != 'true'
+        run: cargo test --manifest-path iscc-tika-core/Cargo.toml
+      - name: Authenticate with crates.io
+        if: steps.check.outputs.skip != 'true'
+        id: crates-auth
+        uses: rust-lang/crates-io-auth-action@v1
+      - name: Publish iscc-tika
+        if: steps.check.outputs.skip != 'true'
+        run: cargo publish --manifest-path iscc-tika-core/Cargo.toml
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.crates-auth.outputs.token }}
+  build-wheels:
+    name: Build wheel (${{ matrix.os }}-${{ matrix.target }})
+    needs: [validate]
+    if: ${{ !cancelled() && !failure() }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64
+          - os: macos-13
+            target: x86_64
+          - os: macos-14
+            target: aarch64
+          - os: windows-latest
+            target: x64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # --- Linux: GraalVM installed inside manylinux container via script ---
+      - name: Build wheel (Linux)
+        if: runner.os == 'Linux'
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: >-
+            --manifest-path bindings/iscc-tika-python/Cargo.toml
+            --release --out bindings/iscc-tika-python/dist
+            -i python3.10 --compatibility manylinux_2_28
+          sccache: 'false'
+          target: ${{ matrix.target }}
+          container: quay.io/pypa/manylinux_2_28_${{ matrix.target }}:latest
+          before-script-linux: |
+            .github/workflows/install-graalvm.sh 23.0.1
+            export PATH="/opt/python/cp310-cp310/bin:$PATH"
+            > .cargo/config.toml
+          docker-options: >-
+            -e JAVA_HOME=/opt/graalvm
+            -e GRAALVM_HOME=/opt/graalvm
+
+      # --- macOS: GraalVM auto-downloaded by build.rs ---
+      - name: Build wheel (macOS)
+        if: runner.os == 'macOS'
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          working-directory: bindings/iscc-tika-python
+          args: --release --out dist --find-interpreter
+          sccache: 'true'
+      - name: Patch wheel lib (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -e
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install wheel
+          bash .github/workflows/patch-wheel-lib-macos.sh bindings/iscc-tika-python/dist
+
+      # --- Windows: GraalVM via setup action ---
+      - name: Setup GraalVM (Windows)
+        if: runner.os == 'Windows'
+        uses: graalvm/setup-graalvm@v1.2.5
+        with:
+          java-version: '23'
+          distribution: graalvm-community
+          set-java-home: 'true'
+      - name: Build wheel (Windows)
+        if: runner.os == 'Windows'
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          working-directory: bindings/iscc-tika-python
+          args: --release --out dist --find-interpreter
+          sccache: 'true'
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.target }}
+          path: bindings/iscc-tika-python/dist
+  build-sdist:
+    name: Build sdist
+    needs: [validate]
+    if: ${{ !cancelled() && !failure() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          working-directory: bindings/iscc-tika-python
+          command: sdist
+          args: --out dist
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-sdist
+          path: bindings/iscc-tika-python/dist
+  test-wheels:
+    name: Test wheel (Python ${{ matrix.python-version }})
+    needs: [build-wheels]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-ubuntu-latest-x86_64
+          path: bindings/iscc-tika-python/dist
+      - name: Install and test
+        shell: bash
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install iscc-tika --find-links bindings/iscc-tika-python/dist --no-index --force-reinstall
+          pip install pytest pytest-timeout scikit-learn lxml
+          cd bindings/iscc-tika-python
+          pytest -s
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [build-wheels, build-sdist, test-wheels]
+    if: inputs.version != '' || inputs.pypi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check version on registry
+        id: check
+        run: |
+          VERSION=$(grep -m1 "^version" bindings/iscc-tika-python/pyproject.toml | sed "s/.*'\(.*\)'/\1/")
+          if curl -sf "https://pypi.org/pypi/iscc-tika/$VERSION/json" > /dev/null 2>&1; then
+            echo "Version $VERSION already published to PyPI, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Download all artifacts
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+      - name: Publish to PyPI
+        if: steps.check.outputs.skip != 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          password: ${{ secrets.PYPI_TOKEN }}
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: [build-wheels, build-sdist, test-wheels]
+    if: inputs.testpypi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+          packages-dir: dist
+          password: ${{ secrets.TEST_PYPI_TOKEN }}

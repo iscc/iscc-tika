@@ -1,0 +1,95 @@
+---
+name: CI
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    name: Lint (fmt, ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Rust format check (core)
+        run: cargo fmt --manifest-path iscc-tika-core/Cargo.toml --check
+      - name: Rust format check (python bindings)
+        run: cargo fmt --manifest-path bindings/iscc-tika-python/Cargo.toml --check
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Ruff check
+        run: pipx run ruff check bindings/iscc-tika-python/
+  build-test-wheel:
+    name: Build test wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Build wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: >-
+            --manifest-path bindings/iscc-tika-python/Cargo.toml
+            --release --out bindings/iscc-tika-python/dist
+            -i python3.10 --compatibility manylinux_2_28
+          sccache: 'false'
+          target: x86_64
+          container: quay.io/pypa/manylinux_2_28_x86_64:latest
+          before-script-linux: |
+            .github/workflows/install-graalvm.sh 23.0.1
+            export PATH="/opt/python/cp310-cp310/bin:$PATH"
+            > .cargo/config.toml
+          docker-options: >-
+            -e JAVA_HOME=/opt/graalvm
+            -e GRAALVM_HOME=/opt/graalvm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-wheel
+          path: bindings/iscc-tika-python/dist
+  python-test:
+    name: Python ${{ matrix.python-version }} test
+    needs: build-test-wheel
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: test-wheel
+          path: bindings/iscc-tika-python/dist
+      - name: Install and test
+        shell: bash
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install iscc-tika --find-links bindings/iscc-tika-python/dist --no-index --force-reinstall
+          pip install pytest pytest-timeout scikit-learn lxml
+          cd bindings/iscc-tika-python
+          pytest -s
+  python:
+    name: Python tests
+    if: always()
+    needs: python-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all Python versions passed
+        run: test "${{ needs.python-test.result }}" = "success"

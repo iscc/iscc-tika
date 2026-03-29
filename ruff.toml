@@ -1,0 +1,8 @@
+# Ruff linter and formatter configuration for iscc-tika
+
+[lint.mccabe]
+max-complexity = 15
+
+[lint.per-file-ignores]
+"**/tests/**" = ["S101"]
+"**/__init__.py" = ["F403", "F405"]
