@@ -11,6 +11,14 @@
 
 ### Bug Fixes
 
+* Fix C-strings passed to GraalVM JNI invocation API. Use NUL-terminated C-string
+  literals instead of Rust str pointers for JVM options, preventing potential memory
+  issues when processing large numbers of files. Also fixes the missing hyphen in
+  the `java.awt.headless` option.
+  ([extractous#73](https://github.com/yobix-ai/extractous/pull/73))
+* Fix `extract_unique_inline_images_only` default value from `false` to `true` to
+  match Tika's own `PDFParserConfig` default.
+  ([extractous#44](https://github.com/yobix-ai/extractous/issues/44))
 * Add missing XMLMessages resource bundle to GraalVM reachability metadata.
   PDFs with XMP metadata caused `RuntimeException from PDFParser` because
   `org.apache.xerces.impl.msg.XMLMessages` was not included in the native image.
@@ -20,6 +28,12 @@
   Documents with encrypted items (e.g. DRM-protected fonts in EPUBs) now return
   extracted text with a warning in metadata (`X-TIKA:warning`) instead of raising
   a `ParseError`.
+
+### Enhancements
+
+* Enable Python 3.14 support by bumping `requires-python` upper bound to `<3.15`.
+  ([extractous#76](https://github.com/yobix-ai/extractous/pull/76),
+  [extractous#70](https://github.com/yobix-ai/extractous/issues/70))
 
 # [](https://github.com/yobix-ai/extractous/compare/v0.1.5...v) (2024-10-30)
 
