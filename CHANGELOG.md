@@ -1,5 +1,14 @@
 # Unreleased
 
+### Breaking Changes
+
+* Project renamed from `extractous` to `iscc-tika`. This is a fork of
+  [yobix-ai/extractous](https://github.com/yobix-ai/extractous) maintained by
+  the ISCC organization.
+  - Rust crate: `extractous` -> `iscc-tika`
+  - Python package: `extractous` -> `iscc-tika` (import as `iscc_tika`)
+  - Java package: `ai.yobix` -> `io.iscc.tika`
+
 ### Bug Fixes
 
 * Add missing XMLMessages resource bundle to GraalVM reachability metadata.

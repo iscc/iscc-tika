@@ -1,6 +1,6 @@
 # iscc-tika
 
-Fork of [yobix-ai/extractous](https://github.com/yobix-ai/extractous) being revived and renamed to `iscc-tika`.
+Fork of [yobix-ai/extractous](https://github.com/yobix-ai/extractous) revived under the ISCC organization.
 
 ## Project Overview
 
@@ -8,21 +8,21 @@ Fast text and metadata extraction from documents (PDF, Word, HTML, etc.) using R
 
 ## Architecture
 
-- **extractous-core/** — Rust core library (`extractous` crate)
+- **iscc-tika-core/** — Rust core library (`iscc-tika` crate)
   - `src/` — Rust source (extractor, config, errors, tika bridge)
   - `tika-native/` — GraalVM-compiled Apache Tika (Gradle build)
   - `build.rs` — Downloads/builds tika-native libs during cargo build
-- **bindings/extractous-python/** — Python bindings via PyO3/maturin
+- **bindings/iscc-tika-python/** — Python bindings via PyO3/maturin
   - `src/` — Rust PyO3 wrapper
-  - `python/` — Pure Python module (`extractous`)
+  - `python/` — Pure Python module (`iscc_tika`)
   - `tests/` — Python tests
 - **test_files/** — Sample documents for testing
 
 ## Build System
 
 - Rust core: `cargo build` (requires tika-native libs)
-- Python bindings: `maturin develop` (from `bindings/extractous-python/`)
-- Tika native: Gradle build in `extractous-core/tika-native/`
+- Python bindings: `maturin develop` (from `bindings/iscc-tika-python/`)
+- Tika native: Gradle build in `iscc-tika-core/tika-native/`
 
 ## Key Technical Details
 
@@ -33,13 +33,5 @@ Fast text and metadata extraction from documents (PDF, Word, HTML, etc.) using R
 
 ## Testing
 
-- Rust: `cargo test` in `extractous-core/`
-- Python: `pytest -s` in `bindings/extractous-python/` (after `maturin develop -E test`)
-
-## Renaming Status
-
-The project is being renamed from `extractous` to `iscc-tika`. This involves updating:
-- Package names (crate, PyPI)
-- Module names and imports
-- Repository URLs and documentation links
-- Branding and references
+- Rust: `cargo test` in `iscc-tika-core/`
+- Python: `pytest -s` in `bindings/iscc-tika-python/` (after `maturin develop -E test`)

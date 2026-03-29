@@ -4,7 +4,7 @@
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <wheel_dir>"
     echo "The script takes a wheel directory and for each wheel found named *.whl "
-    echo "it patches it by searching for a lib that starts with '_extractous*.so' and sets the lib RPATH to '\$ORIGIN/libs'"
+    echo "it patches it by searching for a lib that starts with '_iscc_tika*.so' and sets the lib RPATH to '\$ORIGIN/libs'"
     exit 1
 fi
 
@@ -46,14 +46,14 @@ for WHEEL_FILE in $WHEEL_FILES; do
     python -m wheel unpack "$WHEEL_FILE" -d "$WHEEL_DIR"
 
     # Find the directory containing the unpacked wheel contents
-    UNPACKED_WHEEL_DIR=$(find "$WHEEL_DIR" -mindepth 1 -maxdepth 1 -type d -name "extractous*")
+    UNPACKED_WHEEL_DIR=$(find "$WHEEL_DIR" -mindepth 1 -maxdepth 1 -type d -name "iscc_tika*")
 
-    # Find the .so file in the extractous directory
-    SO_FILE=$(find "$UNPACKED_WHEEL_DIR" -name "_extractous*.so" | head -n 1)
+    # Find the .so file in the iscc_tika directory
+    SO_FILE=$(find "$UNPACKED_WHEEL_DIR" -name "_iscc_tika*.so" | head -n 1)
 
     # Check if the .so file exists
     if [ -z "$SO_FILE" ]; then
-        echo "No file starting with _extractous found in the extractous directory of $WHEEL_FILE"
+        echo "No file starting with _iscc_tika found in the iscc_tika directory of $WHEEL_FILE"
         continue
     fi
 
