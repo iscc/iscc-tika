@@ -1,3 +1,12 @@
+# Unreleased
+
+### Bug Fixes
+
+* Handle EncryptedDocumentException gracefully instead of failing extraction.
+  Documents with encrypted items (e.g. DRM-protected fonts in EPUBs) now return
+  extracted text with a warning in metadata (`X-TIKA:warning`) instead of raising
+  a `ParseError`.
+
 # [](https://github.com/yobix-ai/extractous/compare/v0.1.5...v) (2024-10-30)
 
 

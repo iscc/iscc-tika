@@ -3,6 +3,7 @@ package ai.yobix;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
+import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.exception.WriteLimitReachedException;
 import org.apache.tika.io.TemporaryResources;
@@ -190,6 +191,10 @@ public class TikaNativeMain {
             parsecontext.set(TesseractOCRConfig.class, tesseractConfig);
 
             parser.parse(stream, handlerForParser, metadata, parsecontext);
+        } catch (EncryptedDocumentException e) {
+            // Document contains encrypted items (e.g. DRM-protected fonts in EPUBs).
+            // Return whatever content was extracted before the exception and add a warning.
+            metadata.add("X-TIKA:warning", "EncryptedDocumentException: " + e.getMessage());
         } catch (SAXException e) {
             if (!WriteLimitReachedException.isWriteLimitReached(e)) {
                 // This should never happen with BodyContentHandler...

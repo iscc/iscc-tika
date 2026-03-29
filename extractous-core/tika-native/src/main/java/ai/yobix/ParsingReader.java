@@ -6,6 +6,7 @@ import java.util.concurrent.Executor;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.xml.sax.ContentHandler;
+import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.ZeroByteFileException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -79,6 +80,10 @@ public class ParsingReader extends Reader {
             try {
                 ContentHandler handler = outputXml ? new ToXMLContentHandler(pipedOutputStream, encoding) : new BodyContentHandler(pipedOutputStream);
                 parser.parse(stream, handler, metadata, context);
+            } catch (EncryptedDocumentException e) {
+                // Document contains encrypted items (e.g. DRM-protected fonts in EPUBs).
+                // Allow already-extracted content to flow through and add a warning.
+                metadata.add("X-TIKA:warning", "EncryptedDocumentException: " + e.getMessage());
             } catch (Throwable t) {
                 throwable = t;
             }
