@@ -25,6 +25,7 @@ fn get_vm_attach_current_thread() -> ExtractResult<AttachGuard<'static>> {
     Ok(env)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn parse_to_stream(
     mut env: AttachGuard<'static>,
     data_source_val: JValue,
@@ -161,6 +162,7 @@ pub fn parse_url(
 }
 
 /// Parses a file to a JStringResult using the Apache Tika library.
+#[allow(clippy::too_many_arguments)]
 pub fn parse_to_string(
     mut env: AttachGuard,
     data_source_val: JValue,

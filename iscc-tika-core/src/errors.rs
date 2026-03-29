@@ -28,20 +28,12 @@ pub enum Error {
 impl From<Error> for io::Error {
     fn from(err: Error) -> Self {
         match err {
-            Error::IoError(msg) => {
-                io::Error::new(io::ErrorKind::Other, format!("Io error: {}", msg))
-            }
-            Error::ParseError(msg) => {
-                io::Error::new(io::ErrorKind::Other, format!("Parse error: {}", msg))
-            }
-            Error::Utf8Error(e) => {
-                io::Error::new(io::ErrorKind::Other, format!("UTF8 error: {}", e))
-            }
-            Error::JniError(e) => io::Error::new(io::ErrorKind::Other, format!("JNI error: {}", e)),
-            Error::JniEnvCall(msg) => {
-                io::Error::new(io::ErrorKind::Other, format!("JNI env call error: {}", msg))
-            }
-            _ => io::Error::new(io::ErrorKind::Other, "Unknown error"),
+            Error::IoError(msg) => io::Error::other(format!("Io error: {msg}")),
+            Error::ParseError(msg) => io::Error::other(format!("Parse error: {msg}")),
+            Error::Utf8Error(e) => io::Error::other(format!("UTF8 error: {e}")),
+            Error::JniError(e) => io::Error::other(format!("JNI error: {e}")),
+            Error::JniEnvCall(msg) => io::Error::other(format!("JNI env call error: {msg}")),
+            _ => io::Error::other("Unknown error"),
         }
     }
 }
