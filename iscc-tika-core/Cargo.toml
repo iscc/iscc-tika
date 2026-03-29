@@ -15,6 +15,9 @@ readme = "README.md"
 keywords = ["unstructured", "tika", "text", "pdf", "parser"]
 categories = ["parsing", "text-processing"]
 
+[features]
+stream-attachguard = []
+
 [[bench]]
 name = "extractor"
 harness = false

@@ -24,6 +24,12 @@
   `org.apache.xerces.impl.msg.XMLMessages` was not included in the native image.
   Fixed for all platforms (Linux, macOS, Windows).
   ([extractous#56](https://github.com/yobix-ai/extractous/issues/56))
+* Fix JNI AttachGuard lifetime in JReaderInputStream. The `AttachGuard` can now
+  optionally be stored alongside `GlobalRef`s (via `stream-attachguard` feature
+  flag) to ensure the JVM thread attachment outlives the references, preventing
+  potential use-after-free issues.
+  ([extractous#64](https://github.com/yobix-ai/extractous/pull/64),
+  [jungnitz/extractous@b047ca8](https://github.com/jungnitz/extractous/commit/b047ca8))
 * Fix incorrect default values in config docstrings: `include_headers_and_footers`
   (true -> false), `depth` (8 -> 4), `timeout_seconds` (120 -> 130). Docstrings now
   match the actual Tika defaults used in the `Default` implementations.
