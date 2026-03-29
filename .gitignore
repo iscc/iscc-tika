@@ -24,3 +24,9 @@ perf.*
 
 # Python env files
 **/.python-version
+
+# Coding Agents
+.claude/
+
+# Bubbling, alchemical, where secret raw ingredients transform ;)
+cauldron/
