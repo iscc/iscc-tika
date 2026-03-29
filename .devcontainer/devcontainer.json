@@ -22,7 +22,7 @@
     "source=iscc-tika-uv-cache,target=/home/dev/.cache/uv,type=volume",
     "source=iscc-tika-venv,target=/home/dev/.venvs/iscc-tika,type=volume",
     "source=iscc-tika-gradle-cache,target=/home/dev/.gradle,type=volume",
-    "source=iscc-tika-sccache,target=/home/dev/.cache/sccache,type=volume"
+    "source=iscc-tika-bindings-target,target=/workspace/iscc-tika/bindings/iscc-tika-python/target,type=volume"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
@@ -31,11 +31,9 @@
     "GIT_CONFIG_COUNT": "1",
     "GIT_CONFIG_KEY_0": "commit.gpgsign",
     "GIT_CONFIG_VALUE_0": "false",
-    "RUSTC_WRAPPER": "sccache",
-    "SCCACHE_DIR": "/home/dev/.cache/sccache",
     "CARGO_BUILD_JOBS": "4"
   },
-  "postCreateCommand": "sudo chown -R dev:dev /home/dev/.venvs /home/dev/.cargo/registry /home/dev/.cargo/git /home/dev/.gradle /home/dev/.cache/sccache /workspace/iscc-tika/target && .devcontainer/setup-gitconfig.sh && .devcontainer/setup-codex.sh && .devcontainer/setup-dev.sh",
+  "postCreateCommand": "sudo chown -R dev:dev /home/dev/.venvs /home/dev/.cargo/registry /home/dev/.cargo/git /home/dev/.gradle /workspace/iscc-tika/target /workspace/iscc-tika/bindings/iscc-tika-python/target && .devcontainer/setup-gitconfig.sh && .devcontainer/setup-codex.sh && .devcontainer/setup-dev.sh",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/iscc-tika,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace/iscc-tika"
 }

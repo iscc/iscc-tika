@@ -60,7 +60,7 @@
 - Add dedicated Docker volume for Rust `target/` directory to avoid slow Windows bind mount I/O for
     build artifacts.
 - Configure container resource limits (4 CPUs, 16 GB RAM) for faster compilation.
-- Add `mold` linker and `sccache` for faster Rust builds inside the devcontainer.
+- Add `mold` linker for faster Rust linking inside the devcontainer.
 - Add `.cargo/config.toml` with `mold` linker configuration for Linux targets.
 
 ### Enhancements
@@ -73,6 +73,9 @@
     significantly. Python 3.8+ is now required at build time (already present for the bindings).
 - Remove `native-tls` and `rustls` feature flags (superseded by the Python-based build script which
     uses `urllib.request` for GraalVM downloads).
+- Add `cargo:rerun-if-changed` directives to `build.rs` so the build script only re-runs when
+    `tika-native/` source files actually change, skipping the costly GraalVM/Gradle check on
+    consecutive cargo invocations.
 
 # [](https://github.com/yobix-ai/extractous/compare/v0.1.5...v) (2024-10-30)
 

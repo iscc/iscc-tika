@@ -72,9 +72,8 @@ def is_dir_updated(src: Path, dest: Path) -> bool:
     return False
 
 
-def find_already_built_libs(out_dir: Path) -> Path | None:
-    """Search sibling cargo build directories for existing tika-native artifacts."""
-    build_dir = out_dir.parent.parent  # e.g. target/debug/build
+def find_libs_in_build_dir(build_dir: Path) -> Path | None:
+    """Search a cargo build directory for existing tika-native artifacts."""
     if not build_dir.is_dir():
         return None
     for entry in build_dir.iterdir():
@@ -84,6 +83,25 @@ def find_already_built_libs(out_dir: Path) -> Path | None:
         tika_native_dir = entry / "out" / "tika-native"
         if libs_dir.is_dir() and tika_native_dir.is_dir():
             return libs_dir
+    return None
+
+
+def find_already_built_libs(out_dir: Path, manifest_dir: Path) -> Path | None:
+    """Search cargo build directories for existing tika-native artifacts."""
+    # Check sibling directories in current target (same crate, different hash)
+    found = find_libs_in_build_dir(out_dir.parent.parent)
+    if found:
+        return found
+
+    # Check the core crate's build directory (cross-crate reuse for bindings)
+    core_dir = manifest_dir / "target"
+    if not core_dir.is_dir():
+        core_dir = manifest_dir.parent.parent / "iscc-tika-core" / "target"
+    for profile in ("debug", "release"):
+        found = find_libs_in_build_dir(core_dir / profile / "build")
+        if found:
+            return found
+
     return None
 
 
@@ -149,9 +167,9 @@ def install_graalvm(install_dir: Path, target_os: str, target_arch: str) -> Path
     # Download (read fully into memory to avoid corrupt partial files)
     if not archive_path.exists():
         info(f"Downloading GraalVM from {url}")
-        req = Request(url, headers={"User-Agent": "iscc-tika-build"})
+        req = Request(url, headers={"User-Agent": "iscc-tika-build"})  # noqa: S310
         try:
-            with urlopen(req, timeout=300) as resp:
+            with urlopen(req, timeout=300) as resp:  # noqa: S310
                 data = resp.read()
         except Exception as exc:
             sys.exit(f"Failed to download GraalVM JDK from {url}: {exc}")
@@ -161,13 +179,13 @@ def install_graalvm(install_dir: Path, target_os: str, target_arch: str) -> Path
     info(f"Extracting GraalVM JDK archive {archive_path}")
     if archive_ext == "zip":
         with zipfile.ZipFile(archive_path) as zf:
-            zf.extractall(install_dir)
+            zf.extractall(install_dir)  # noqa: S202
     else:
         with tarfile.open(archive_path, "r:gz") as tf:
-            tf.extractall(install_dir, filter="data") if sys.version_info >= (
+            tf.extractall(install_dir, filter="data") if sys.version_info >= (  # noqa: S202
                 3,
                 12,
-            ) else tf.extractall(install_dir)  # noqa: E501
+            ) else tf.extractall(install_dir)  # noqa: S202
 
     if not graalvm_home.exists():
         sys.exit(
@@ -227,7 +245,7 @@ def gradle_build(
     gradlew_path = tika_native_dir / gradlew
 
     env = {**os.environ, "JAVA_HOME": str(graalvm_home)}
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         [str(gradlew_path), "--no-daemon", "nativeCompile"],
         cwd=str(tika_native_dir),
         env=env,
@@ -268,36 +286,35 @@ def main() -> None:
     libs_out_dir = out_dir / "libs"
     tika_native_dir = out_dir / "tika-native"
 
-    need_build = False
-
-    # Check if source files were updated
-    if is_dir_updated(tika_native_source_dir, tika_native_dir):
+    source_changed = is_dir_updated(tika_native_source_dir, tika_native_dir)
+    if source_changed:
         info("Lib tika_native files were updated")
         if libs_out_dir.exists():
             shutil.rmtree(libs_out_dir)
         if tika_native_dir.exists():
             shutil.rmtree(tika_native_dir)
-        need_build = True
     else:
         info("Lib tika_native files were not updated")
 
-    # Try to reuse artifacts from a sibling build directory
-    found = find_already_built_libs(out_dir)
-    if found is not None:
-        if found != libs_out_dir:
-            copy_build_artifacts(found, [libs_out_dir], clean=False)
-    else:
-        need_build = True
+    if libs_out_dir.is_dir():
+        return  # Already have valid libs
 
-    if need_build:
-        gradle_build(
-            tika_native_source_dir,
-            out_dir,
-            libs_out_dir,
-            python_bind_dir,
-            args.target_os,
-            args.target_arch,
-        )
+    # Try to reuse pre-built libs from sibling or core crate build directories
+    found = find_already_built_libs(out_dir, manifest_dir)
+    if found is not None:
+        info(f"Reusing pre-built tika_native libs from {found}")
+        copy_build_artifacts(found, [libs_out_dir], clean=False)
+        return
+
+    # No pre-built libs available — full Gradle build required
+    gradle_build(
+        tika_native_source_dir,
+        out_dir,
+        libs_out_dir,
+        python_bind_dir,
+        args.target_os,
+        args.target_arch,
+    )
 
 
 if __name__ == "__main__":

@@ -61,9 +61,6 @@ RUN mkdir -p $HOME/.venvs/iscc-tika $HOME/.cargo/registry $HOME/.cargo/git $HOME
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     --default-toolchain stable --profile default
 
-# Install sccache for Rust build caching
-RUN cargo install sccache --locked
-
 # Install uv (Python package manager)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 

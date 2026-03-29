@@ -12,6 +12,14 @@ fn main() {
     let out_dir = env::var("OUT_DIR").map(PathBuf::from).unwrap();
     let libs_out_dir = out_dir.join("libs");
 
+    // Only re-run build script when these change (avoids costly rebuilds on every cargo invocation)
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=setup_tika_native.py");
+    println!(
+        "cargo:rerun-if-changed={}",
+        root_dir.join("tika-native").display()
+    );
+
     // Target platform (set by Cargo for build scripts)
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
