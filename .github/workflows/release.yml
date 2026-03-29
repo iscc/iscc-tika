@@ -17,10 +17,6 @@ on:
         description: Publish to PyPI (without version validation)
         type: boolean
         default: false
-      testpypi:
-        description: Publish to TestPyPI
-        type: boolean
-        default: false
 permissions:
   contents: read
 concurrency:
@@ -102,9 +98,7 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64
-          - os: macos-13
-            target: x86_64
-          - os: macos-14
+          - os: macos-latest
             target: aarch64
           - os: windows-latest
             target: x64
@@ -251,22 +245,3 @@ jobs:
         with:
           packages-dir: dist
           password: ${{ secrets.PYPI_TOKEN }}
-  publish-testpypi:
-    name: Publish to TestPyPI
-    needs: [build-wheels, build-sdist, test-wheels]
-    if: inputs.testpypi
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          path: dist
-          merge-multiple: true
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          skip-existing: true
-          packages-dir: dist
-          password: ${{ secrets.TEST_PYPI_TOKEN }}
