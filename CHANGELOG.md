@@ -44,6 +44,11 @@
 
 ### Enhancements
 
+* Add `native-tls` and `rustls` feature flags to control the TLS backend used
+  for build-time GraalVM downloads. Defaults to `native-tls`. Useful for musl
+  or cross-compilation environments where OpenSSL is unavailable.
+  ([extractous#75](https://github.com/yobix-ai/extractous/pull/75),
+  [dgnfu/extractous@709b38e](https://github.com/dgnfu/extractous/commit/709b38e))
 * Enable Python 3.14 support by bumping `requires-python` upper bound to `<3.15`.
   ([extractous#76](https://github.com/yobix-ai/extractous/pull/76),
   [extractous#70](https://github.com/yobix-ai/extractous/issues/70))
