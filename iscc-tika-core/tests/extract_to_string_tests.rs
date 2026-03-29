@@ -51,6 +51,7 @@ fn test_extract_file_to_string(file_name: &str, target_dist: f64) {
 }
 
 #[test]
+#[ignore = "requires Arabic tessdata and times out in constrained environments"]
 fn test_extract_file_to_string_ara_ocr_png() {
     let extractor = Extractor::new()
         .set_ocr_config(TesseractOcrConfig::new().set_language("ara"))
