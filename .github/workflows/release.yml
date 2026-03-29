@@ -130,6 +130,7 @@ jobs:
           before-script-linux: |
             .github/workflows/install-graalvm.sh 23.0.1
             export PATH="/opt/python/cp310-cp310/bin:$PATH"
+            > .cargo/config.toml
           docker-options: >-
             -e JAVA_HOME=/opt/graalvm
             -e GRAALVM_HOME=/opt/graalvm
