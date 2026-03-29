@@ -211,10 +211,10 @@ pub fn copy_build_artifacts(from_path: &PathBuf, copy_to_dirs: Vec<&PathBuf>, cl
             .expect("Failed to copy build artifacts to OUTPUT_DIR");
 
         if clean {
-            fs::remove_file(dir.join("graal_isolate_dynamic.h")).unwrap();
-            fs::remove_file(dir.join("graal_isolate.h")).unwrap();
-            fs::remove_file(dir.join("libtika_native_dynamic.h")).unwrap();
-            fs::remove_file(dir.join("libtika_native.h")).unwrap();
+            let _ = fs::remove_file(dir.join("graal_isolate_dynamic.h"));
+            let _ = fs::remove_file(dir.join("graal_isolate.h"));
+            let _ = fs::remove_file(dir.join("libtika_native_dynamic.h"));
+            let _ = fs::remove_file(dir.join("libtika_native.h"));
         }
     }
 }

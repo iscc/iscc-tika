@@ -24,6 +24,9 @@
   `org.apache.xerces.impl.msg.XMLMessages` was not included in the native image.
   Fixed for all platforms (Linux, macOS, Windows).
   ([extractous#56](https://github.com/yobix-ai/extractous/issues/56))
+* Prevent build panics when GraalVM header files are missing during artifact cleanup.
+  Gracefully ignore missing `.h` files instead of unwrapping.
+  ([ProSync/extractous@cac1e0f](https://github.com/ProSync/extractous/commit/cac1e0f))
 * Handle EncryptedDocumentException gracefully instead of failing extraction.
   Documents with encrypted items (e.g. DRM-protected fonts in EPUBs) now return
   extracted text with a warning in metadata (`X-TIKA:warning`) instead of raising
