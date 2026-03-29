@@ -2,6 +2,11 @@
 
 ### Bug Fixes
 
+* Add missing XMLMessages resource bundle to GraalVM reachability metadata.
+  PDFs with XMP metadata caused `RuntimeException from PDFParser` because
+  `org.apache.xerces.impl.msg.XMLMessages` was not included in the native image.
+  Fixed for all platforms (Linux, macOS, Windows).
+  ([extractous#56](https://github.com/yobix-ai/extractous/issues/56))
 * Handle EncryptedDocumentException gracefully instead of failing extraction.
   Documents with encrypted items (e.g. DRM-protected fonts in EPUBs) now return
   extracted text with a warning in metadata (`X-TIKA:warning`) instead of raising

@@ -8,6 +8,13 @@
         },
         {
             "locales": [
+                "en",
+                "en-US"
+            ],
+            "name": "org.apache.xerces.impl.msg.XMLMessages"
+        },
+        {
+            "locales": [
                 "en-US"
             ],
             "name": "org.apache.xmlbeans.impl.regex.message"
@@ -5834,6 +5841,15 @@
         },
         {
             "glob": "org/apache/xerces/impl/msg/SAXMessages_en_US.properties"
+        },
+        {
+            "glob": "org/apache/xerces/impl/msg/XMLMessages.properties"
+        },
+        {
+            "glob": "org/apache/xerces/impl/msg/XMLMessages_en.properties"
+        },
+        {
+            "glob": "org/apache/xerces/impl/msg/XMLMessages_en_US.properties"
         },
         {
             "glob": "org/apache/xmlbeans/impl/regex/message.properties"
