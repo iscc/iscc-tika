@@ -63,16 +63,17 @@ skip-auditwheel = true
 # Set the RPATH to $ORIGIN because the graalvm libs will be bundled in the same dir as the _iscc_tika.abi3.so
 rustc-args = ["-C", "link-arg=-Wl,-rpath,$ORIGIN"]
 
-# Maturin include command will start looking from the python/iscc_tika folder
-# so to include the graalvm libs the rust build script must copy them to python/iscc_tika folder
+# Include GraalVM native libs that build.rs copies into python/iscc_tika/.
+# Paths are relative to pyproject.toml. Using python/iscc_tika/* instead of **/*
+# prevents bundling duplicate libs from target/ (which triples wheel size).
 include = [
-  { path = "**/*.so", format = [
+  { path = "python/iscc_tika/*.so", format = [
     "wheel",
   ] },
-  { path = "**/*.dylib", format = [
+  { path = "python/iscc_tika/*.dylib", format = [
     "wheel",
   ] },
-  { path = "**/*.dll", format = [
+  { path = "python/iscc_tika/*.dll", format = [
     "wheel",
   ] },
 ]
