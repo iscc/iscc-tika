@@ -1,0 +1,55 @@
+# mise.toml — task runner for iscc-tika
+#
+# Usage: mise run <task>
+
+[settings]
+# Use bash for inline task scripts (Windows defaults to cmd.exe which can't handle &&, pipes, etc.)
+windows_default_inline_shell_args = "bash -c"
+
+# --- Quality ---
+
+[tasks.check]
+description = "Run all pre-commit hooks on all files"
+run = "prek run --all-files"
+
+[tasks.lint]
+description = "Run format checks, clippy, and ruff"
+run = """
+cargo fmt --manifest-path iscc-tika-core/Cargo.toml -- --check &&
+cargo fmt --manifest-path bindings/iscc-tika-python/Cargo.toml -- --check &&
+cargo clippy --manifest-path iscc-tika-core/Cargo.toml -- -D warnings &&
+ruff check &&
+ruff format --check
+"""
+
+[tasks.format]
+description = "Run pre-commit auto-fix hooks (quiet, filtered output)"
+run = "prek run --stage pre-commit --all-files -q 2>&1 || true"
+
+[tasks.test]
+description = "Run all tests"
+run = """
+cargo test --manifest-path iscc-tika-core/Cargo.toml &&
+cd bindings/iscc-tika-python && pytest -s
+"""
+
+# --- Version ---
+
+[tasks."version:check"]
+description = "Check that core and Python package versions match"
+run = """
+set -e
+CARGO_VER=$(grep '^version' iscc-tika-core/Cargo.toml | head -1 | tr -d ' "' | cut -d= -f2)
+PYTHON_VER=$(grep '^version' bindings/iscc-tika-python/pyproject.toml | head -1 | tr -d " '" | cut -d= -f2)
+if [ "$CARGO_VER" != "$PYTHON_VER" ]; then
+  echo "ERROR: Version mismatch — Cargo: $CARGO_VER, Python: $PYTHON_VER"
+  exit 1
+fi
+echo "OK: versions match ($CARGO_VER)"
+"""
+
+# --- PR ---
+
+[tasks."pr:main"]
+description = "Create a PR from develop to main"
+run = "gh pr create -B main -H develop --title '{{arg(name=\"title\", i=0, default=\"Merge develop into main\")}}' --body '{{arg(name=\"body\", i=1, default=\"Merge develop into main.\")}}'"

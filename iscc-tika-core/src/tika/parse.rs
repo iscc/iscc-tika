@@ -71,7 +71,7 @@ pub fn parse_file(
     pdf_conf: &PdfParserConfig,
     office_conf: &OfficeParserConfig,
     ocr_conf: &TesseractOcrConfig,
-    as_xml: bool
+    as_xml: bool,
 ) -> ExtractResult<(StreamReader, Metadata)> {
     let mut env = get_vm_attach_current_thread()?;
 

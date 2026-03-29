@@ -71,12 +71,16 @@ RUN uv python install 3.13
 # to avoid yanked transitive dependency issues with cargo-xwin/xwin)
 RUN uv tool install maturin
 
+# Install mise (task runner)
+RUN curl https://mise.run | sh
+
 # Install Claude Code and Codex CLI
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex
 
 # Configure ZSH
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
-    && echo 'export HISTFILE=/commandhistory/.zsh_history' >> $HOME/.zshrc
+    && echo 'export HISTFILE=/commandhistory/.zsh_history' >> $HOME/.zshrc \
+    && echo 'eval "$($HOME/.local/bin/mise activate zsh)"' >> $HOME/.zshrc
 
 # Git defaults (overridden at runtime by bind-mounted ~/.gitconfig from host,
 # but useful when the container runs without the bind mount)

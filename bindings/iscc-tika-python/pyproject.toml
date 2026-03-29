@@ -8,12 +8,17 @@ version = '0.2.1'
 classifiers = [
   "Programming Language :: Rust",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 description = "Fast text and metadata extraction from documents using Apache Tika compiled to native code"
 license = { text = "Apache-2.0" }
 readme = "README.md"
-requires-python = ">=3.8,<3.15"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # To generate python docs using pdoc we need to run:
@@ -22,7 +27,7 @@ requires-python = ">=3.8,<3.15"
 docs = ["pdoc"]
 # To run tests using pytest we need to run:
 # pytest -s
-test = ["pytest","scikit-learn"]
+test = ["pytest", "pytest-timeout", "scikit-learn"]
 
 [project.urls]
 Homepage = "https://github.com/iscc/iscc-tika"
@@ -36,7 +41,7 @@ profile = "release"
 features = ["pyo3/extension-module"]
 # -------------- Cargo options --------------
 
-strip=true
+strip = true
 
 # It is a common practice to keep the pyo3 module private and import it within a global python module
 # iscc_tika: is the pure python module that is exported
@@ -52,7 +57,7 @@ python-source = "python"
 # By skipping the wheel, we just get a plain _extracts_rs* lib, and we have to:
 #   * bundle our graalvm libs using the below include [] directive
 #   * change the RPATH of _extracts_rs* lib to be able to properly find the bundled graalvm libs
-skip-auditwheel=true
+skip-auditwheel = true
 
 # This tells cargo to set the RPATH for the private module built lib _iscc_tika.abi3.so
 # Set the RPATH to $ORIGIN because the graalvm libs will be bundled in the same dir as the _iscc_tika.abi3.so
@@ -61,12 +66,20 @@ rustc-args = ["-C", "link-arg=-Wl,-rpath,$ORIGIN"]
 # Maturin include command will start looking from the python/iscc_tika folder
 # so to include the graalvm libs the rust build script must copy them to python/iscc_tika folder
 include = [
-  {path = "**/*.so", format = ["wheel"]},
-  {path = "**/*.dylib", format = ["wheel"]},
-  {path = "**/*.dll", format = ["wheel"]}
+  { path = "**/*.so", format = [
+    "wheel",
+  ] },
+  { path = "**/*.dylib", format = [
+    "wheel",
+  ] },
+  { path = "**/*.dll", format = [
+    "wheel",
+  ] },
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 120
+
 [dependency-groups]
-dev = [
-    "lxml>=6.0.2",
-]
+dev = ["lxml>=6.0.2"]

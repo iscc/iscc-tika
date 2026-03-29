@@ -2,7 +2,7 @@
 import os
 import sys
 
-from iscc_tika import Extractor, PdfOcrStrategy, PdfParserConfig
+from iscc_tika import Extractor
 
 
 def extract_to_stream(file_path: str):
@@ -18,11 +18,11 @@ def extract_to_stream(file_path: str):
         if bytes_read == 0:
             break
         # Decode the valid portion of the buffer and append it to the result
-        chunk = buffer[:bytes_read].decode('utf-8')
+        chunk = buffer[:bytes_read].decode("utf-8")
         print(chunk)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Pare input args
     if len(sys.argv) != 2:
         print(f"Usage: '{sys.argv[0]}' <filename>")

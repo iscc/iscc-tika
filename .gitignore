@@ -21,12 +21,14 @@ perf.*
 
 # Python cache files
 **/__pycache__/
+.ruff_cache/
 
 # Python env files
 **/.python-version
 
 # Coding Agents
-.claude/
+.claude/*
+!.claude/skills/
 
 # Bubbling, alchemical, where secret raw ingredients transform ;)
 cauldron/

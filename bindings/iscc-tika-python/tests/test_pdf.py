@@ -13,6 +13,7 @@ def test_extract_file_to_string():
     print(f"test_pdf:test_extract_file_to_string result = {result}")
     assert result == expected_result()
 
+
 def test_extract_file():
     extractor = Extractor()
     reader, metadata = extractor.extract_file("tests/quarkus.pdf")
@@ -21,6 +22,7 @@ def test_extract_file():
 
     print(f"test_pdf:test_extract_file result = {result}")
     assert result == expected_result()
+
 
 def test_extract_file_as_xml():
     extractor = Extractor()
@@ -33,6 +35,7 @@ def test_extract_file_as_xml():
     result_text = extract_body_text(result_xml)
     assert result_text.strip() == expected_result().strip()
 
+
 def test_extract_bytes():
     extractor = Extractor()
 
@@ -44,6 +47,7 @@ def test_extract_bytes():
 
     print(f"test_pdf:test_extract_bytes result = {result}")
     assert result == expected_result()
+
 
 def test_extract_bytes_as_xml():
     extractor = Extractor()

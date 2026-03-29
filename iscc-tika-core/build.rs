@@ -51,7 +51,9 @@ fn main() {
                 copy_build_artifacts(&libs_dir, vec![&libs_out_dir], false);
             }
         }
-        None => { need_build = true; }
+        None => {
+            need_build = true;
+        }
     }
 
     // Launch the gradle build

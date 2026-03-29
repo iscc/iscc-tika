@@ -30,7 +30,7 @@
     "GIT_CONFIG_KEY_0": "commit.gpgsign",
     "GIT_CONFIG_VALUE_0": "false"
   },
-  "postCreateCommand": "sudo chown -R dev:dev /home/dev/.venvs /home/dev/.cargo/registry /home/dev/.cargo/git /home/dev/.gradle /workspace/iscc-tika/target && .devcontainer/setup-gitconfig.sh && .devcontainer/setup-codex.sh",
+  "postCreateCommand": "sudo chown -R dev:dev /home/dev/.venvs /home/dev/.cargo/registry /home/dev/.cargo/git /home/dev/.gradle /workspace/iscc-tika/target && .devcontainer/setup-gitconfig.sh && .devcontainer/setup-codex.sh && .devcontainer/setup-dev.sh",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/iscc-tika,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace/iscc-tika"
 }

@@ -1,4 +1,3 @@
-
 <div align="center" style="margin-top: 20px">
 <h1 style="margin-top: 0; padding-top: 0">iscc-tika</h1>
 </div>
@@ -15,34 +14,46 @@
 
 <div align="center">
 
-_iscc-tika offers a fast and efficient solution for extracting content and metadata from various document types such as PDF, Word, HTML, and [many other formats](#supported-file-formats).
-A comprehensive solution in Rust with Python bindings._
+_iscc-tika offers a fast and efficient solution for extracting content and metadata from various
+document types such as PDF, Word, HTML, and [many other formats](#supported-file-formats). A
+comprehensive solution in Rust with Python bindings._
 
 </div>
 
 ---
 
-> **Note:** This project is a fork of [yobix-ai/extractous](https://github.com/yobix-ai/extractous), revived and maintained by the [ISCC](https://iscc.codes) organization.
+> **Note:** This project is a fork of [yobix-ai/extractous](https://github.com/yobix-ai/extractous),
+> revived and maintained by the [ISCC](https://iscc.codes) organization.
 
 ## Why iscc-tika?
 
-* **Built with Rust:** The core is developed in Rust, leveraging its high performance, memory safety, multi-threading capabilities, and zero-cost abstractions.
-* **Extended format support with Apache Tika:** For file formats not natively supported by the Rust core, we compile the well-known [Apache Tika](https://tika.apache.org/) into native shared libraries using [GraalVM](https://www.graalvm.org/) ahead-of-time compilation technology. These shared libraries are then linked to and called from our Rust core. No local servers, no virtual machines, or any garbage collection, just pure native execution.
-* **Python bindings:** Python binding is a wrapper around the Rust core with the potential to circumvent the Python GIL limitation and make efficient use of multi-cores.
+- **Built with Rust:** The core is developed in Rust, leveraging its high performance, memory
+    safety, multi-threading capabilities, and zero-cost abstractions.
+- **Extended format support with Apache Tika:** For file formats not natively supported by the Rust
+    core, we compile the well-known [Apache Tika](https://tika.apache.org/) into native shared
+    libraries using [GraalVM](https://www.graalvm.org/) ahead-of-time compilation technology. These
+    shared libraries are then linked to and called from our Rust core. No local servers, no virtual
+    machines, or any garbage collection, just pure native execution.
+- **Python bindings:** Python binding is a wrapper around the Rust core with the potential to
+    circumvent the Python GIL limitation and make efficient use of multi-cores.
 
 ## 🌳 Key Features
-* High-performance unstructured data extraction optimized for speed and low memory usage.
-* Clear and simple API for extracting text and metadata content.
-* Automatically identifies document types and extracts content accordingly.
-* Supports [many file formats](#supported-file-formats) (most formats supported by Apache Tika).
-* Extracts text from images and scanned documents with OCR through [tesseract-ocr](https://github.com/tesseract-ocr/tesseract).
-* Core engine written in Rust with bindings for [Python](https://pypi.org/project/iscc-tika/).
-* Free for Commercial Use: Apache 2.0 License.
+
+- High-performance unstructured data extraction optimized for speed and low memory usage.
+- Clear and simple API for extracting text and metadata content.
+- Automatically identifies document types and extracts content accordingly.
+- Supports [many file formats](#supported-file-formats) (most formats supported by Apache Tika).
+- Extracts text from images and scanned documents with OCR through
+    [tesseract-ocr](https://github.com/tesseract-ocr/tesseract).
+- Core engine written in Rust with bindings for [Python](https://pypi.org/project/iscc-tika/).
+- Free for Commercial Use: Apache 2.0 License.
 
 ## 🚀 Quickstart
 
 #### Python
-* Extract a file content to a string:
+
+- Extract a file content to a string:
+
 ```python
 from iscc_tika import Extractor
 
@@ -57,7 +68,8 @@ result, metadata = extractor.extract_file_to_string("README.md")
 print(result)
 print(metadata)
 ```
-* Extracting a file(URL / bytearray) to a buffered stream:
+
+- Extracting a file(URL / bytearray) to a buffered stream:
 
 ```python
 from iscc_tika import Extractor
@@ -85,22 +97,27 @@ print(result)
 print(metadata)
 ```
 
-* Extracting a file with OCR:
+- Extracting a file with OCR:
 
-You need to have Tesseract installed with the language pack. For example on debian `sudo apt install tesseract-ocr tesseract-ocr-deu`
+You need to have Tesseract installed with the language pack. For example on debian
+`sudo apt install tesseract-ocr tesseract-ocr-deu`
 
 ```python
 from iscc_tika import Extractor, TesseractOcrConfig
 
 extractor = Extractor().set_ocr_config(TesseractOcrConfig().set_language("deu"))
-result, metadata = extractor.extract_file_to_string("../../test_files/documents/eng-ocr.pdf")
+result, metadata = extractor.extract_file_to_string(
+    "../../test_files/documents/eng-ocr.pdf"
+)
 
 print(result)
 print(metadata)
 ```
 
 #### Rust
-* Extract a file content to a string:
+
+- Extract a file content to a string:
+
 ```rust
 use iscc_tika::Extractor;
 
@@ -117,7 +134,8 @@ fn main() {
 }
 ```
 
-* Extract a content of a file(URL/ bytes) to a `StreamReader` and perform buffered reading
+- Extract a content of a file(URL/ bytes) to a `StreamReader` and perform buffered reading
+
 ```rust
 use std::io::{BufReader, Read};
 // use std::fs::File; use for bytes
@@ -153,9 +171,10 @@ fn main() {
 }
 ```
 
-* Extract content of PDF with OCR.
+- Extract content of PDF with OCR.
 
-You need to have Tesseract installed with the language pack. For example on debian `sudo apt install tesseract-ocr tesseract-ocr-deu`
+You need to have Tesseract installed with the language pack. For example on debian
+`sudo apt install tesseract-ocr tesseract-ocr-deu`
 
 ```rust
 use iscc_tika::Extractor;
@@ -175,20 +194,63 @@ fn main() {
 
 ## 📄 Supported file formats
 
-| **Category**        | **Supported Formats**                                   | **Notes**                                      |
-|---------------------|---------------------------------------------------------|------------------------------------------------|
-| **Microsoft Office**| DOC, DOCX, PPT, PPTX, XLS, XLSX, RTF                    | Includes legacy and modern Office file formats |
-| **OpenOffice**      | ODT, ODS, ODP                                           | OpenDocument formats                           |
-| **PDF**             | PDF                                                     | Can extracts embedded content and supports OCR |
-| **Spreadsheets**    | CSV, TSV                                                | Plain text spreadsheet formats                 |
-| **Web Documents**   | HTML, XML                                               | Parses and extracts content from web documents |
-| **E-Books**         | EPUB                                                    | EPUB format for electronic books               |
-| **Text Files**      | TXT, Markdown                                           | Plain text formats                             |
-| **Images**          | PNG, JPEG, TIFF, BMP, GIF, ICO, PSD, SVG                | Extracts embedded text with OCR                |
-| **E-Mail**          | EML, MSG, MBOX, PST                                     | Extracts content, headers, and attachments     |
+| **Category**         | **Supported Formats**                    | **Notes**                                      |
+| -------------------- | ---------------------------------------- | ---------------------------------------------- |
+| **Microsoft Office** | DOC, DOCX, PPT, PPTX, XLS, XLSX, RTF     | Includes legacy and modern Office file formats |
+| **OpenOffice**       | ODT, ODS, ODP                            | OpenDocument formats                           |
+| **PDF**              | PDF                                      | Can extracts embedded content and supports OCR |
+| **Spreadsheets**     | CSV, TSV                                 | Plain text spreadsheet formats                 |
+| **Web Documents**    | HTML, XML                                | Parses and extracts content from web documents |
+| **E-Books**          | EPUB                                     | EPUB format for electronic books               |
+| **Text Files**       | TXT, Markdown                            | Plain text formats                             |
+| **Images**           | PNG, JPEG, TIFF, BMP, GIF, ICO, PSD, SVG | Extracts embedded text with OCR                |
+| **E-Mail**           | EML, MSG, MBOX, PST                      | Extracts content, headers, and attachments     |
+
+## Development
+
+### Prerequisites
+
+- [Rust](https://rustup.rs/) (stable toolchain)
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- [mise](https://mise.jdx.dev/) (task runner)
+- GraalVM / JDK 17+ (for building tika-native)
+
+### Setup
+
+Install dev tools and git hooks:
+
+```bash
+uv tool install prek ruff taplo yamlfix
+uv tool install mdformat --with 'mdformat-mkdocs[recommended]'
+prek install && prek install --hook-type pre-push
+```
+
+### Tasks
+
+Run tasks with `mise run <task>`:
+
+| Task            | Description                                       |
+| --------------- | ------------------------------------------------- |
+| `check`         | Run all pre-commit hooks on all files             |
+| `lint`          | Run format checks, clippy, and ruff               |
+| `format`        | Run pre-commit auto-fix hooks                     |
+| `test`          | Run all tests (cargo test + pytest)               |
+| `version:check` | Check that core and Python package versions match |
+| `pr:main`       | Create a PR from develop to main                  |
+
+### Quality Gates
+
+Quality gates are enforced automatically via git hooks:
+
+- **Pre-commit** (fast, auto-fix): file hygiene, markdown formatting, cargo-fmt, ruff, taplo,
+    yamlfix
+- **Pre-push** (thorough): cargo-clippy, cargo-test, security scan, complexity check, pytest
 
 ## 🤝 Contributing
-Contributions are welcome! Please open an issue or submit a pull request if you have any improvements or new features to propose.
+
+Contributions are welcome! Please open an issue or submit a pull request if you have any
+improvements or new features to propose.
 
 ## 🕮 License
+
 This project is licensed under the Apache License 2.0. See the LICENSE file for details.

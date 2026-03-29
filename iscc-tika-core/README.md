@@ -1,19 +1,22 @@
 # iscc-tika
 
-iscc-tika is a Rust crate that provides a unified approach for detecting and extracting metadata and text content from
-various documents
-types such as PDF, Word, HTML, and [many other formats](#supported-file-formats).
+iscc-tika is a Rust crate that provides a unified approach for detecting and extracting metadata and
+text content from various documents types such as PDF, Word, HTML, and
+[many other formats](#supported-file-formats).
 
 ## Features
 
-* High-level Rust API for extracting text and metadata content for [many file formats](#supported-file-formats).
-* Strives to be efficient and fast.
-* Internally it calls the [Apache Tika](https://tika.apache.org/) for any file format that is not natively supported in the Rust core.
-* Comprehensive documentation and examples to help you get started quickly.
+- High-level Rust API for extracting text and metadata content for
+    [many file formats](#supported-file-formats).
+- Strives to be efficient and fast.
+- Internally it calls the [Apache Tika](https://tika.apache.org/) for any file format that is not
+    natively supported in the Rust core.
+- Comprehensive documentation and examples to help you get started quickly.
 
 ## Usage
 
-* Create and configure an `Extractor` instance
+- Create and configure an `Extractor` instance
+
 ```rust
 use iscc_tika::Extractor;
 use iscc_tika::PdfParserConfig;
@@ -33,7 +36,8 @@ fn main() {
 }
 ```
 
-* Extracting a content of a file to a `String`
+- Extracting a content of a file to a `String`
+
 ```rust
 use iscc_tika::Extractor;
 
@@ -53,7 +57,8 @@ fn main() {
 }
 ```
 
-* Extract a content of a file(URL/ bytes) to a `StreamReader` and perform buffered reading
+- Extract a content of a file(URL/ bytes) to a `StreamReader` and perform buffered reading
+
 ```rust
 use std::io::{BufReader, Read};
 // use std::fs::File; use for bytes
@@ -86,8 +91,11 @@ fn main() {
 }
 ```
 
-* Extract content of PDF with OCR. You need to have Tesseract installed with the language pack. For example on debian `sudo apt install tesseract-ocr tesseract-ocr-deu`
-* If you get `Parse error occurred : Unable to extract PDF content`, it is most likely that OCR language pack is not installed
+- Extract content of PDF with OCR. You need to have Tesseract installed with the language pack. For
+    example on debian `sudo apt install tesseract-ocr tesseract-ocr-deu`
+- If you get `Parse error occurred : Unable to extract PDF content`, it is most likely that OCR
+    language pack is not installed
+
 ```rust
 use iscc_tika::Extractor;
 
@@ -104,40 +112,49 @@ fn main() {
 }
 ```
 
-
 ## Building
 
 ### Requirements
-* iscc-tika uses [Apache Tika](https://tika.apache.org/) for file formats that are not natively supported in Rust.
-  However, to achieve one of iscc-tika goals, which is speed and efficiency, we do not set up any Tika as a servers or
-  run any Java code. We instead, compile [Apache Tika](https://tika.apache.org/) as native shared libraries and use
-  them on our Rust core as ffi. [GraalVm](https://www.graalvm.org/) is required to build Tika as native libs.
-* The provided build script already takes care of installing the required GraalVM JDK. However, if you want to use a
-  specific local version, you can do so by setting the GRAALVM_HOME environment variable
-* We recommend using [sdkman](https://sdkman.io/install) to install GraalVM JDKs
-* `sdk install java 23.0.1-graalce`
-* To be able to use it from IDEA, on Ubuntu for example add `GRAALVM_HOME=$HOME/.sdkman/candidates/java/23.0.1-graalce` to `/etc/environment`
-* Confirm that GraalVM is installed correctly by running `java -version`. You should see something like:
+
+- iscc-tika uses [Apache Tika](https://tika.apache.org/) for file formats that are not natively
+    supported in Rust. However, to achieve one of iscc-tika goals, which is speed and efficiency, we
+    do not set up any Tika as a servers or run any Java code. We instead, compile
+    [Apache Tika](https://tika.apache.org/) as native shared libraries and use them on our Rust core
+    as ffi. [GraalVm](https://www.graalvm.org/) is required to build Tika as native libs.
+- The provided build script already takes care of installing the required GraalVM JDK. However, if
+    you want to use a specific local version, you can do so by setting the GRAALVM_HOME environment
+    variable
+- We recommend using [sdkman](https://sdkman.io/install) to install GraalVM JDKs
+- `sdk install java 23.0.1-graalce`
+- To be able to use it from IDEA, on Ubuntu for example add
+    `GRAALVM_HOME=$HOME/.sdkman/candidates/java/23.0.1-graalce` to `/etc/environment`
+- Confirm that GraalVM is installed correctly by running `java -version`. You should see something
+    like:
+
 ```text
 openjdk 23.0.1 2024-10-15
 OpenJDK Runtime Environment GraalVM CE 23.0.1+11.1 (build 23.0.1+11-jvmci-b01)
 OpenJDK 64-Bit Server VM GraalVM CE 23.0.1+11.1 (build 23.0.1+11-jvmci-b01, mixed mode, sharing)
 ```
-* On macOS the official GraalVM JDKs fail to work with code that use java awt. On macOS, we recommend using
-  Bellsoft Liberica NIK
-* `sdk install java 24.1.1.r23-nik`
-* iscc-tika supports OCR through [tesseract](https://github.com/tesseract-ocr/tesseract), make sure tesseract is
-installed on your system because some of the OCR tests will fail if no tesseract is found.
-* `sudo apt install tesseract-ocr`
-* Install any language extensions you want. for example to install German and Arabic:
-* `sudo apt install tesseract-ocr-deu tesseract-ocr-ara`
-* On Mac
-* `brew install tesseract tesseract-lang`
+
+- On macOS the official GraalVM JDKs fail to work with code that use java awt. On macOS, we
+    recommend using Bellsoft Liberica NIK
+- `sdk install java 24.1.1.r23-nik`
+- iscc-tika supports OCR through [tesseract](https://github.com/tesseract-ocr/tesseract), make sure
+    tesseract is installed on your system because some of the OCR tests will fail if no tesseract is
+    found.
+- `sudo apt install tesseract-ocr`
+- Install any language extensions you want. for example to install German and Arabic:
+- `sudo apt install tesseract-ocr-deu tesseract-ocr-ara`
+- On Mac
+- `brew install tesseract tesseract-lang`
 
 ### Building iscc-tika
-* To build iscc-tika, just run:
-* `cargo build`
+
+- To build iscc-tika, just run:
+- `cargo build`
 
 ### Running Tests
-* To run tests, just run:
-* `cargo test`
+
+- To run tests, just run:
+- `cargo test`

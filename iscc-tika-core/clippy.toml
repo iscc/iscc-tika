@@ -1,1 +1,1 @@
-#too-many-arguments-threshold = 12
+cognitive-complexity-threshold = 15 # Radon grade C

@@ -1,7 +1,7 @@
 # iscc-tika Python Bindings
 
-This project provides Python bindings for the iscc-tika library, allowing you to use iscc-tika functionality in
-your Python applications.
+This project provides Python bindings for the iscc-tika library, allowing you to use iscc-tika
+functionality in your Python applications.
 
 ## Installation
 
@@ -59,7 +59,9 @@ Extracting a file with OCR:
 from iscc_tika import Extractor, TesseractOcrConfig
 
 extractor = Extractor().set_ocr_config(TesseractOcrConfig().set_language("deu"))
-result, metadata = extractor.extract_file_to_string("../../test_files/documents/eng-ocr.pdf")
+result, metadata = extractor.extract_file_to_string(
+    "../../test_files/documents/eng-ocr.pdf"
+)
 
 print(result)
 print(metadata)

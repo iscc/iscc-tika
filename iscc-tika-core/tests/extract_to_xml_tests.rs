@@ -1,10 +1,9 @@
 use iscc_tika::Extractor;
+use quick_xml::events::Event;
+use quick_xml::reader::Reader;
 use std::fs;
 use test_case::test_case;
 use textdistance::nstr::cosine;
-use quick_xml::reader::Reader;
-use quick_xml::events::Event;
-
 
 // Declarers the shared test_utils code as module in this integration test
 mod test_utils;
@@ -54,7 +53,8 @@ fn extract_p_tag_content(xml: &str) -> String {
 #[test_case("bug_16.docx", 0.9; "Test bug16 DOCX file")]
 //#[test_case("eng-ocr.pdf", 0.9; "Test eng-ocr PDF file")]
 fn test_extract_file_to_xml(file_name: &str, target_dist: f64) {
-    let extractor = Extractor::new().set_extract_string_max_length(1000000)
+    let extractor = Extractor::new()
+        .set_extract_string_max_length(1000000)
         .set_xml_output(true);
     // extract file with extractor
     let (extracted_xml, extracted_metadata) = extractor
