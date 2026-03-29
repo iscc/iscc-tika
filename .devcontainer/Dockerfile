@@ -60,14 +60,15 @@ RUN mkdir -p $HOME/.venvs/iscc-tika $HOME/.cargo/registry $HOME/.cargo/git $HOME
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     --default-toolchain stable --profile default
 
-# Install uv (Python package manager) and maturin (PyO3 build tool)
+# Install uv (Python package manager)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install Python 3.13 via uv
 RUN uv python install 3.13
 
-# Install maturin for building Python bindings
-RUN cargo install maturin
+# Install maturin for building Python bindings (via uv/pip, not cargo,
+# to avoid yanked transitive dependency issues with cargo-xwin/xwin)
+RUN uv tool install maturin
 
 # Install Claude Code and Codex CLI
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex
