@@ -9,7 +9,7 @@ ARG USERNAME=dev
 # System packages: dev tools + build essentials for Rust crates with C deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     less procps sudo fzf zsh man-db unzip gnupg2 jq nano vim \
-    build-essential pkg-config libssl-dev \
+    build-essential pkg-config libssl-dev clang mold \
     openjdk-17-jdk-headless \
     tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -60,6 +60,9 @@ RUN mkdir -p $HOME/.venvs/iscc-tika $HOME/.cargo/registry $HOME/.cargo/git $HOME
 # Install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     --default-toolchain stable --profile default
+
+# Install sccache for Rust build caching
+RUN cargo install sccache --locked
 
 # Install uv (Python package manager)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
