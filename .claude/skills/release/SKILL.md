@@ -2,8 +2,8 @@
 name: release
 description: >-
   End-to-end release workflow for iscc-tika. Bumps version, runs quality gates,
-  commits, creates PR to main, and publishes Rust crate to crates.io and Python
-  wheels to PyPI. Self-healing: diagnoses and fixes failures before retrying.
+  commits, creates PR to main, and publishes Python wheels to PyPI.
+  Self-healing: diagnoses and fixes failures before retrying.
 disable-model-invocation: false
 user-invocable: true
 argument-hint: <version> [--dry-run] [--skip-publish]
@@ -203,7 +203,7 @@ gh pr create -B main -H develop --title "Release <version>" --body "$(cat <<'EOF
 
 Version bump for release <version>.
 
-Publishes to: crates.io, PyPI (Linux x86_64, macOS x86_64/aarch64, Windows x64).
+Publishes to: PyPI (Linux x86_64, macOS x86_64/aarch64, Windows x64).
 EOF
 )"
 ```
@@ -246,9 +246,8 @@ with `git diff` and discard them with `git checkout -- .` if desired. Then jump 
 If `--skip-publish`, skip this step and Step 6.2. Report that the PR was merged and the release can
 be triggered later with `gh workflow run release.yml --ref main -f version=<version>`.
 
-Trigger the release workflow via `workflow_dispatch`. The workflow handles everything: publishing
-the Rust crate to crates.io, building Python wheels for all platforms, running smoke tests, and
-publishing to PyPI.
+Trigger the release workflow via `workflow_dispatch`. The workflow handles everything: building
+Python wheels for all platforms, running smoke tests, and publishing to PyPI.
 
 ```
 gh workflow run release.yml --ref main -f version=<version>
@@ -285,17 +284,13 @@ If `--dry-run` or `--skip-publish`, skip this phase.
 
 ### Step 7.1 — Verify registries
 
-After the release workflow completes, verify each registry has the new version:
+After the release workflow completes, verify PyPI has the new version:
 
 ```
-# crates.io
-cargo info iscc-tika 2>/dev/null | grep -q "<version>" && echo "crates.io: OK" || echo "crates.io: NOT FOUND"
-
-# PyPI
 curl -sf "https://pypi.org/pypi/iscc-tika/<version>/json" > /dev/null && echo "PyPI: OK" || echo "PyPI: NOT FOUND"
 ```
 
-If either shows "NOT FOUND" but the release workflow succeeded, it may take a few minutes for the
+If it shows "NOT FOUND" but the release workflow succeeded, it may take a few minutes for the
 registry to index. Suggest re-checking later.
 
 ### Step 7.2 — Summary
@@ -308,12 +303,10 @@ Release <version> complete!
   Commit:   <sha>
   PR:       <url>
 
-  Registries:
-    crates.io          <version>  OK
+  Registry:
     PyPI               <version>  OK
 
   Verify installation:
-    cargo add iscc-tika@<version>
     pip install iscc-tika==<version>
 ```
 
@@ -329,28 +322,25 @@ When any step fails:
 6. **Never skip a failing step silently** — every failure must be reported
 7. **Never force-push or use destructive git operations** — ask the user first
 
-## Re-triggering Individual Registries
+## Re-triggering PyPI Publish
 
-If the release workflow fails for specific registries (while others succeed), individual registries
-can be re-triggered via `workflow_dispatch` without the `version` input:
+If the release workflow fails during PyPI publishing (while wheel builds succeeded), the publish can
+be re-triggered via `workflow_dispatch` without the `version` input:
 
 ```
-gh workflow run release.yml --ref main -f crates-io=true
 gh workflow run release.yml --ref main -f pypi=true
-gh workflow run release.yml --ref main -f testpypi=true
 ```
 
 **Critical:** Always use `--ref main`. Do NOT pass `-f version=<version>` for re-triggers — that
 would re-run version validation unnecessarily.
 
-The publish steps have version-existence checks that skip already-published versions (idempotent).
-Only the failed registry will actually publish.
+The publish step has a version-existence check that skips already-published versions (idempotent).
 
 ## Important Constraints
 
 - This skill handles real releases with real side effects. Be careful and precise
-- Never guess registry credentials or authentication — they are configured via GitHub secrets and
-    OIDC trusted publishing (PyPI uses OIDC; crates.io uses OIDC via `crates-io-auth-action`)
+- Never guess registry credentials or authentication — PyPI uses a `PYPI_TOKEN` secret configured in
+    GitHub Actions
 - Never modify files outside the release scope without asking. Release scope includes: version bump
     files, formatting/lint fixes from quality gates, and any files the pre-commit hooks auto-fix
 - The `develop` branch is never deleted — it's the long-lived working branch

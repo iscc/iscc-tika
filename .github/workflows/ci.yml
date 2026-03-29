@@ -46,11 +46,11 @@ jobs:
           target: x86_64
           container: quay.io/pypa/manylinux_2_28_x86_64:latest
           before-script-linux: |
-            .github/workflows/install-graalvm-sdkman.sh 23.0.1-graalce
+            .github/workflows/install-graalvm.sh 23.0.1
             export PATH="/opt/python/cp310-cp310/bin:$PATH"
           docker-options: >-
-            -e JAVA_HOME=/root/.sdkman/candidates/java/23.0.1-graalce
-            -e GRAALVM_HOME=/root/.sdkman/candidates/java/23.0.1-graalce
+            -e JAVA_HOME=/opt/graalvm
+            -e GRAALVM_HOME=/opt/graalvm
       - uses: actions/upload-artifact@v4
         with:
           name: test-wheel
