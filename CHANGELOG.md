@@ -42,6 +42,14 @@
   extracted text with a warning in metadata (`X-TIKA:warning`) instead of raising
   a `ParseError`.
 
+### DevContainer
+
+* Add copyright information to LICENSE for original author and fork maintainer.
+* Persist build caches across devcontainer rebuilds by removing `${devcontainerId}`
+  from Docker volume names.
+* Add dedicated Docker volume for Rust `target/` directory to avoid slow Windows
+  bind mount I/O for build artifacts.
+
 ### Enhancements
 
 * Add `native-tls` and `rustls` feature flags to control the TLS backend used

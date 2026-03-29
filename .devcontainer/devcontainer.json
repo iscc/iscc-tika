@@ -14,12 +14,13 @@
     "source=${localEnv:USERPROFILE}/.claude.json,target=/home/dev/.claude.json,type=bind",
     "source=${localEnv:USERPROFILE}/.codex,target=/home/dev/.codex,type=bind",
     "source=${localEnv:USERPROFILE}/.gitconfig,target=/home/dev/.gitconfig-host,type=bind,readonly",
-    "source=iscc-tika-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
-    "source=iscc-tika-cargo-registry-${devcontainerId},target=/home/dev/.cargo/registry,type=volume",
-    "source=iscc-tika-cargo-git-${devcontainerId},target=/home/dev/.cargo/git,type=volume",
-    "source=iscc-tika-uv-cache-${devcontainerId},target=/home/dev/.cache/uv,type=volume",
-    "source=iscc-tika-venv-${devcontainerId},target=/home/dev/.venvs/iscc-tika,type=volume",
-    "source=iscc-tika-gradle-cache-${devcontainerId},target=/home/dev/.gradle,type=volume"
+    "source=iscc-tika-bashhistory,target=/commandhistory,type=volume",
+    "source=iscc-tika-cargo-registry,target=/home/dev/.cargo/registry,type=volume",
+    "source=iscc-tika-cargo-git,target=/home/dev/.cargo/git,type=volume",
+    "source=iscc-tika-target,target=/workspace/iscc-tika/target,type=volume",
+    "source=iscc-tika-uv-cache,target=/home/dev/.cache/uv,type=volume",
+    "source=iscc-tika-venv,target=/home/dev/.venvs/iscc-tika,type=volume",
+    "source=iscc-tika-gradle-cache,target=/home/dev/.gradle,type=volume"
   ],
   "containerEnv": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
@@ -29,7 +30,7 @@
     "GIT_CONFIG_KEY_0": "commit.gpgsign",
     "GIT_CONFIG_VALUE_0": "false"
   },
-  "postCreateCommand": "sudo chown -R dev:dev /home/dev/.venvs /home/dev/.cargo/registry /home/dev/.cargo/git /home/dev/.gradle && .devcontainer/setup-gitconfig.sh && .devcontainer/setup-codex.sh",
+  "postCreateCommand": "sudo chown -R dev:dev /home/dev/.venvs /home/dev/.cargo/registry /home/dev/.cargo/git /home/dev/.gradle /workspace/iscc-tika/target && .devcontainer/setup-gitconfig.sh && .devcontainer/setup-codex.sh",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/iscc-tika,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace/iscc-tika"
 }
