@@ -9,7 +9,7 @@ def extract_to_stream(file_path: str):
 
     # Extract the file
     extractor = Extractor()
-    reader = extractor.extract_file(in_file)
+    reader, metadata = extractor.extract_file(in_file)
 
     buffer = bytearray(4096 * 4096)
     while True:
