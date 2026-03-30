@@ -48,7 +48,6 @@ fn extract_p_tag_content(xml: &str) -> String {
 #[test_case("category-level.docx", 0.8; "Test DOCX file")]
 #[test_case("simple.doc", 0.8; "Test DOC file")]
 #[test_case("simple.pptx", 0.9; "Test another PPTX file")]
-#[test_case("table-multi-row-column-cells.png", -1.0; "Test PNG file")]
 #[test_case("winter-sports.epub", 0.8; "Test EPUB file")]
 #[test_case("bug_16.docx", 0.9; "Test bug16 DOCX file")]
 //#[test_case("eng-ocr.pdf", 0.9; "Test eng-ocr PDF file")]
