@@ -78,7 +78,9 @@ public class ParsingReader extends Reader {
 
         public void run() {
             try {
-                ContentHandler handler = outputXml ? new ToXMLContentHandler(pipedOutputStream, encoding) : new BodyContentHandler(pipedOutputStream);
+                ContentHandler handler = outputXml
+                        ? new ToXMLContentHandler(pipedOutputStream, encoding)
+                        : new BodyContentHandler(new OutputStreamWriter(pipedOutputStream, encoding));
                 parser.parse(stream, handler, metadata, context);
             } catch (EncryptedDocumentException e) {
                 // Document contains encrypted items (e.g. DRM-protected fonts in EPUBs).

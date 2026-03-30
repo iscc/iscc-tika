@@ -1,10 +1,10 @@
 plugins {
     id 'java-library'
-    id'org.graalvm.buildtools.native' version '0.10.3' // GraalVM plugin for Gradle
+    id'org.graalvm.buildtools.native' version '0.10.4' // GraalVM plugin for Gradle
 }
 
 
-def tikaVersion = "2.9.2"
+def tikaVersion = "3.3.0"
 def numThreads = Runtime.getRuntime().availableProcessors()
 def currentOs = org.gradle.internal.os.OperatingSystem.current()
 
@@ -28,10 +28,9 @@ repositories {
 
 dependencies {
     // Tika uses slf4j, just use a nop logger to ignore all logging
-    implementation("org.slf4j:slf4j-nop:2.0.11")
+    implementation("org.slf4j:slf4j-nop:2.0.16")
     // Some dependencies use log4j such as poi, route log4j back to slf4j
-    // Had to use 3.0.0-beta2 because it is solves some issues with log4j to make it graalvm native friendly
-    implementation 'org.apache.logging.log4j:log4j-to-slf4j:3.0.0-beta2'
+    implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.24.2'
 
     implementation("org.apache.tika:tika-core:$tikaVersion")
     implementation "org.apache.tika:tika-parsers-standard:$tikaVersion" // Apache Tika parsers
@@ -44,7 +43,6 @@ dependencies {
     implementation "org.apache.tika:tika-parser-cad-module:$tikaVersion"
     implementation "org.apache.tika:tika-parser-crypto-module:$tikaVersion"
     implementation "org.apache.tika:tika-parser-font-module:$tikaVersion"
-    implementation "org.apache.tika:tika-parser-html-commons:$tikaVersion"
     implementation "org.apache.tika:tika-parser-image-module:$tikaVersion"
     implementation "org.apache.tika:tika-parser-mail-module:$tikaVersion"
     implementation "org.apache.tika:tika-parser-miscoffice-module:$tikaVersion"
@@ -54,6 +52,10 @@ dependencies {
     implementation "org.apache.tika:tika-parser-text-module:$tikaVersion"
     implementation "org.apache.tika:tika-parser-xml-module:$tikaVersion"
     implementation "org.apache.tika:tika-parser-webarchive-module:$tikaVersion"
+
+    // Jakarta Mail dependencies (required for Tika 3.x email parsing)
+    implementation 'jakarta.mail:jakarta.mail-api:2.1.3'
+    implementation 'org.eclipse.angus:angus-mail:2.0.3'
 }
 
 graalvmNative {
@@ -81,10 +83,13 @@ graalvmNative {
                     "--enable-https", // Very important https working
                     "-O3",
                     "--parallelism=$numThreads",
-                    "-march=compatibility" // VERY IMPORTANT to use compatibility flag. If not the libs will use the cpu arch of the build machine and will notwork on other CPUs if distributed
+                    "-march=compatibility", // VERY IMPORTANT to use compatibility flag. If not the libs will use the cpu arch of the build machine and will notwork on other CPUs if distributed
+                    "-H:+UnlockExperimentalVMOptions",
+                    "-H:+RemoveUnusedSymbols",
+                    "-H:+ReportExceptionStackTraces"
             )
             jvmArgs.add('-Djava.awt.headless=true')
-            requiredVersion = '23' // The minimal GraalVM version, can be `MAJOR`, `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`
+            requiredVersion = '25' // The minimal GraalVM version, can be `MAJOR`, `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`
         }
     }
 }

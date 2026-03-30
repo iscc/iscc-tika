@@ -6032,6 +6032,9 @@
         {
             "glob": "jdk/xml/internal/jdkcatalog/JDKCatalog.xml",
             "module": "java.xml"
+        },
+        {
+            "glob": "org/apache/poi/schemas/ooxml/**/*.xsb"
         }
     ],
     "serialization": [
