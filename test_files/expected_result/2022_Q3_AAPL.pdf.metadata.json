@@ -72,9 +72,6 @@
     "pdf:hasXFA": [
         "false"
     ],
-    "access_permission:can_print_degraded": [
-        "true"
-    ],
     "pdf:producer": [
         "EDGRpdf Service w/ EO.Pdf 22.0.40.0"
     ],

@@ -281,20 +281,6 @@
         {
             "fields": [
                 {
-                    "name": "bdata"
-                },
-                {
-                    "name": "consumed"
-                },
-                {
-                    "name": "id"
-                }
-            ],
-            "type": "java.awt.AWTEvent"
-        },
-        {
-            "fields": [
-                {
                     "name": "extraAlpha"
                 },
                 {
@@ -315,71 +301,6 @@
         {
             "fields": [
                 {
-                    "name": "appContext"
-                },
-                {
-                    "name": "background"
-                },
-                {
-                    "name": "cursor"
-                },
-                {
-                    "name": "enabled"
-                },
-                {
-                    "name": "focusable"
-                },
-                {
-                    "name": "foreground"
-                },
-                {
-                    "name": "graphicsConfig"
-                },
-                {
-                    "name": "height"
-                },
-                {
-                    "name": "parent"
-                },
-                {
-                    "name": "peer"
-                },
-                {
-                    "name": "visible"
-                },
-                {
-                    "name": "width"
-                },
-                {
-                    "name": "x"
-                },
-                {
-                    "name": "y"
-                }
-            ],
-            "methods": [
-                {
-                    "name": "getFont_NoClientCode",
-                    "parameterTypes": []
-                },
-                {
-                    "name": "getLocationOnScreen_NoTreeLock",
-                    "parameterTypes": []
-                },
-                {
-                    "name": "getToolkitImpl",
-                    "parameterTypes": []
-                },
-                {
-                    "name": "isEnabledImpl",
-                    "parameterTypes": []
-                }
-            ],
-            "type": "java.awt.Component"
-        },
-        {
-            "fields": [
-                {
                     "name": "height"
                 },
                 {
@@ -389,33 +310,13 @@
             "type": "java.awt.Dimension"
         },
         {
-            "fields": [
-                {
-                    "name": "name"
-                },
-                {
-                    "name": "pData"
-                },
-                {
-                    "name": "size"
-                },
-                {
-                    "name": "style"
-                }
-            ],
             "methods": [
                 {
-                    "name": "getFont",
-                    "parameterTypes": [
-                        "java.lang.String"
-                    ]
-                },
-                {
-                    "name": "getFontPeer",
+                    "name": "isHeadless",
                     "parameterTypes": []
                 }
             ],
-            "type": "java.awt.Font"
+            "type": "java.awt.GraphicsEnvironment"
         },
         {
             "fields": [
@@ -448,6 +349,20 @@
         {
             "methods": [
                 {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "int",
+                        "int",
+                        "int",
+                        "int"
+                    ]
+                }
+            ],
+            "type": "java.awt.Rectangle"
+        },
+        {
+            "methods": [
+                {
                     "name": "getDefaultToolkit",
                     "parameterTypes": []
                 },
@@ -459,37 +374,6 @@
                 }
             ],
             "type": "java.awt.Toolkit"
-        },
-        {
-            "fields": [
-                {
-                    "name": "CONSOLE"
-                },
-                {
-                    "name": "LOCK"
-                },
-                {
-                    "name": "REMOTE"
-                },
-                {
-                    "name": "UNSPECIFIED"
-                }
-            ],
-            "type": "java.awt.desktop.UserSessionEvent$Reason"
-        },
-        {
-            "fields": [
-                {
-                    "name": "modifiers"
-                }
-            ],
-            "methods": [
-                {
-                    "name": "getButtonDownMasks",
-                    "parameterTypes": []
-                }
-            ],
-            "type": "java.awt.event.InputEvent"
         },
         {
             "fields": [
@@ -730,6 +614,26 @@
             "type": "java.lang.Boolean"
         },
         {
+            "methods": [
+                {
+                    "name": "load",
+                    "parameterTypes": [
+                        "java.lang.String"
+                    ]
+                }
+            ],
+            "type": "java.lang.System"
+        },
+        {
+            "methods": [
+                {
+                    "name": "yield",
+                    "parameterTypes": []
+                }
+            ],
+            "type": "java.lang.Thread"
+        },
+        {
             "fields": [
                 {
                     "name": "lengths"
@@ -925,19 +829,6 @@
             "type": "org.apache.tika.parser.pdf.PDFParserConfig"
         },
         {
-            "methods": [
-                {
-                    "name": "notifyToolkitThreadBusy",
-                    "parameterTypes": []
-                },
-                {
-                    "name": "notifyToolkitThreadFree",
-                    "parameterTypes": []
-                }
-            ],
-            "type": "sun.awt.AWTAutoShutdown"
-        },
-        {
             "fields": [
                 {
                     "name": "INTVAL_STROKE_PURE"
@@ -948,7 +839,25 @@
         {
             "methods": [
                 {
-                    "name": "isTouchKeyboardAutoShowEnabled",
+                    "name": "awtLock",
+                    "parameterTypes": []
+                },
+                {
+                    "name": "awtLockNotify",
+                    "parameterTypes": []
+                },
+                {
+                    "name": "awtLockNotifyAll",
+                    "parameterTypes": []
+                },
+                {
+                    "name": "awtLockWait",
+                    "parameterTypes": [
+                        "long"
+                    ]
+                },
+                {
+                    "name": "awtUnlock",
                     "parameterTypes": []
                 }
             ],
@@ -957,13 +866,24 @@
         {
             "methods": [
                 {
-                    "name": "dwmCompositionChanged",
+                    "name": "init",
                     "parameterTypes": [
-                        "boolean"
+                        "long"
                     ]
                 }
             ],
-            "type": "sun.awt.Win32GraphicsEnvironment"
+            "type": "sun.awt.X11.XErrorHandlerUtil"
+        },
+        {
+            "fields": [
+                {
+                    "name": "modLockIsShiftLock"
+                },
+                {
+                    "name": "numLockMask"
+                }
+            ],
+            "type": "sun.awt.X11.XToolkit"
         },
         {
             "fields": [
@@ -1051,103 +971,6 @@
                 }
             ],
             "type": "sun.awt.image.IntegerComponentRaster"
-        },
-        {
-            "fields": [
-                {
-                    "name": "volSurfaceManager"
-                }
-            ],
-            "type": "sun.awt.image.SunVolatileImage"
-        },
-        {
-            "fields": [
-                {
-                    "name": "sdCurrent"
-                }
-            ],
-            "type": "sun.awt.image.VolatileSurfaceManager"
-        },
-        {
-            "fields": [
-                {
-                    "name": "hwnd"
-                },
-                {
-                    "name": "winGraphicsConfig"
-                }
-            ],
-            "methods": [
-                {
-                    "name": "disposeLater",
-                    "parameterTypes": []
-                },
-                {
-                    "name": "replaceSurfaceData",
-                    "parameterTypes": []
-                },
-                {
-                    "name": "replaceSurfaceDataLater",
-                    "parameterTypes": []
-                }
-            ],
-            "type": "sun.awt.windows.WComponentPeer"
-        },
-        {
-            "methods": [
-                {
-                    "name": "systemSleepCallback",
-                    "parameterTypes": [
-                        "boolean"
-                    ]
-                },
-                {
-                    "name": "userSessionCallback",
-                    "parameterTypes": [
-                        "boolean",
-                        "java.awt.desktop.UserSessionEvent$Reason"
-                    ]
-                }
-            ],
-            "type": "sun.awt.windows.WDesktopPeer"
-        },
-        {
-            "fields": [
-                {
-                    "name": "createError"
-                },
-                {
-                    "name": "destroyed"
-                },
-                {
-                    "name": "pData"
-                },
-                {
-                    "name": "target"
-                }
-            ],
-            "methods": [
-                {
-                    "name": "getPeerForTarget",
-                    "parameterTypes": [
-                        "java.lang.Object"
-                    ]
-                }
-            ],
-            "type": "sun.awt.windows.WObjectPeer"
-        },
-        {
-            "methods": [
-                {
-                    "name": "displayChanged",
-                    "parameterTypes": []
-                },
-                {
-                    "name": "windowsSettingChange",
-                    "parameterTypes": []
-                }
-            ],
-            "type": "sun.awt.windows.WToolkit"
         },
         {
             "methods": [
@@ -1653,47 +1476,13 @@
         {
             "fields": [
                 {
-                    "name": "d3dEnabled"
+                    "name": "picture"
                 },
                 {
-                    "name": "d3dSet"
-                },
-                {
-                    "name": "offscreenSharingEnabled"
-                },
-                {
-                    "name": "setHighDPIAware"
+                    "name": "xid"
                 }
             ],
-            "type": "sun.java2d.windows.WindowsFlags"
-        },
-        {
-            "fields": [
-                {
-                    "name": "isStaticMain"
-                },
-                {
-                    "name": "noArgMain"
-                }
-            ],
-            "methods": [
-                {
-                    "name": "getApplicationClass",
-                    "parameterTypes": []
-                }
-            ],
-            "type": "sun.launcher.LauncherHelper"
-        },
-        {
-            "methods": [
-                {
-                    "name": "main",
-                    "parameterTypes": [
-                        "java.lang.String[]"
-                    ]
-                }
-            ],
-            "type": "worker.org.gradle.process.internal.worker.GradleWorkerMain"
+            "type": "sun.java2d.xr.XRSurfaceData"
         }
     ],
     "reflection": [
@@ -1726,6 +1515,15 @@
                 }
             ],
             "type": "com.drew.metadata.exif.ExifSubIFDDirectory"
+        },
+        {
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": []
+                }
+            ],
+            "type": "com.fasterxml.jackson.databind.ext.Java7SupportImpl"
         },
         {
             "type": "com.github.jaiimageio.impl.common.PackageUtil"
@@ -4979,17 +4777,6 @@
             "methods": [
                 {
                     "name": "<init>",
-                    "parameterTypes": [
-                        "java.security.SecureRandomParameters"
-                    ]
-                }
-            ],
-            "type": "sun.security.provider.DRBG"
-        },
-        {
-            "methods": [
-                {
-                    "name": "<init>",
                     "parameterTypes": []
                 }
             ],
@@ -5048,6 +4835,17 @@
                 }
             ],
             "type": "sun.security.provider.MD5"
+        },
+        {
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "java.security.SecureRandomParameters"
+                    ]
+                }
+            ],
+            "type": "sun.security.provider.NativePRNG"
         },
         {
             "methods": [
@@ -6121,6 +5919,9 @@
         {
             "glob": "jdk/xml/internal/jdkcatalog/JDKCatalog.xml",
             "module": "java.xml"
+        },
+        {
+            "glob": "org/apache/poi/schemas/ooxml/**/*.xsb"
         }
     ],
     "serialization": [
