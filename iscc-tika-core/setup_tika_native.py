@@ -20,24 +20,20 @@ from urllib.request import Request, urlopen
 
 GRAALVM_URLS: dict[tuple[str, str], dict[str, str]] = {
     ("windows", "x86_64"): {
-        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-23.0.1/graalvm-community-jdk-23.0.1_windows-x64_bin.zip",
-        "main_dir": "graalvm-community-openjdk-23.0.1+11.1",
-    },
-    ("macos", "x86_64"): {
-        "url": "https://github.com/bell-sw/LibericaNIK/releases/download/24.1.1+1-23.0.1+13/bellsoft-liberica-vm-full-openjdk23.0.1+13-24.1.1+1-macos-amd64.tar.gz",
-        "main_dir": "bellsoft-liberica-vm-full-openjdk23-24.1.1/Contents/Home",
+        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_windows-x64_bin.zip",
+        "main_dir": "graalvm-community-openjdk-25.0.2+10.1",
     },
     ("macos", "aarch64"): {
-        "url": "https://github.com/bell-sw/LibericaNIK/releases/download/24.1.1+1-23.0.1+13/bellsoft-liberica-vm-openjdk23.0.1+13-24.1.1+1-macos-aarch64.tar.gz",
-        "main_dir": "bellsoft-liberica-vm-openjdk23-24.1.1/Contents/Home",
+        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_macos-aarch64_bin.tar.gz",
+        "main_dir": "graalvm-community-openjdk-25.0.2+10.1/Contents/Home",
     },
     ("linux", "x86_64"): {
-        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-23.0.1/graalvm-community-jdk-23.0.1_linux-x64_bin.tar.gz",
-        "main_dir": "graalvm-community-openjdk-23.0.1+11.1",
+        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-x64_bin.tar.gz",
+        "main_dir": "graalvm-community-openjdk-25.0.2+10.1",
     },
     ("linux", "aarch64"): {
-        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-23.0.1/graalvm-community-jdk-23.0.1_linux-aarch64_bin.tar.gz",
-        "main_dir": "graalvm-community-openjdk-23.0.1+11.1",
+        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-aarch64_bin.tar.gz",
+        "main_dir": "graalvm-community-openjdk-25.0.2+10.1",
     },
 }
 
@@ -117,8 +113,8 @@ def graalvm_install_help() -> str:
         "We recommend using sdkman to install and manage different JDKs.\n"
         "See https://sdkman.io/usage for more information.\n"
         "You can install graalvm using:\n"
-        "  sdk install java 23.0.1-graalce\n"
-        "  sdk use java 23.0.1-graalce"
+        "  sdk install java 25.0.2-graalce\n"
+        "  sdk use java 25.0.2-graalce"
     )
 
 

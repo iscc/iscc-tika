@@ -26,19 +26,20 @@ def cosine_similarity(text1, text2):
 
 
 def read_to_string(reader):
-    """Read from stream to string."""
+    """Read from stream to string using incremental UTF-8 decoding."""
+    import codecs
+
+    decoder = codecs.getincrementaldecoder("utf-8")()
     utf8_string = []
     buffer = bytearray(4096)
 
     while True:
         bytes_read = reader.readinto(buffer)
-        # If no more data, exit the loop
         if bytes_read == 0:
+            utf8_string.append(decoder.decode(b"", final=True))
             break
-        # Decode the valid portion of the buffer and append it to the result
-        utf8_string.append(buffer[:bytes_read].decode("utf-8"))
+        utf8_string.append(decoder.decode(buffer[:bytes_read], final=False))
 
-    # Join all parts into a single string
     return "".join(utf8_string)
 
 
