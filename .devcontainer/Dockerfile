@@ -1,4 +1,4 @@
-FROM node:22-bookworm
+FROM mcr.microsoft.com/devcontainers/javascript-node:22-bookworm
 
 ARG TZ
 ENV TZ="$TZ"
@@ -78,9 +78,12 @@ RUN curl https://mise.run | sh
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex
 
 # Configure ZSH
+# NODE_OPTIONS is set in .zshrc rather than ENV so the "=" in the value
+# doesn't end up in Config.Env, where Zed's devcontainer env parser chokes on it.
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended \
     && echo 'export HISTFILE=/commandhistory/.zsh_history' >> $HOME/.zshrc \
-    && echo 'eval "$($HOME/.local/bin/mise activate zsh)"' >> $HOME/.zshrc
+    && echo 'eval "$($HOME/.local/bin/mise activate zsh)"' >> $HOME/.zshrc \
+    && echo 'export NODE_OPTIONS="--max-old-space-size=4096"' >> $HOME/.zshrc
 
 # Git defaults (overridden at runtime by bind-mounted ~/.gitconfig from host,
 # but useful when the container runs without the bind mount)
