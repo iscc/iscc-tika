@@ -36,6 +36,16 @@
 - Handle EncryptedDocumentException gracefully instead of failing extraction. Documents with
     encrypted items (e.g. DRM-protected fonts in EPUBs) now return extracted text with a warning in
     metadata (`X-TIKA:warning`) instead of raising a `ParseError`.
+- Handle `TIKA-198: Illegal IOException from EpubParser` gracefully by retrying via a lenient EPUB
+    fallback. Tika 3.3.0's `EpubParser.bufferedParseZipFile` strict check concatenates the OPF's
+    parent directory with each manifest `href` and looks it up literally via `ZipFile.getEntry`,
+    which does not normalize `..` segments. EPUBs whose OPF references an entry at the archive root
+    via `href="../foo.xhtml"` therefore fail the strict check and throw `EpubZipException`, which
+    propagates as `TIKA-198`. `extract_file_to_string` / `extract_bytes_to_string` now detect this
+    case and fall back to parsing the spine entries directly through `commons-compress` +
+    `AutoDetectParser`, collapsing `..` via `Path.normalize`. A warning is recorded in
+    `X-TIKA:warning`. See `docs/patches.md` for the full root-cause analysis. The reader-based API
+    (`extract_file` / `extract_bytes`) is not yet covered and still surfaces the raw error.
 
 ### Development
 
