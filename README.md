@@ -23,7 +23,7 @@ comprehensive solution in Rust with Python bindings._
 ---
 
 > **Note:** This project is a fork of [yobix-ai/extractous](https://github.com/yobix-ai/extractous),
-> revived and maintained by the [ISCC](https://iscc.codes) organization.
+> revived and maintained by the [ISCC](https://iscc.io) Foundation.
 
 ## Why iscc-tika?
 
