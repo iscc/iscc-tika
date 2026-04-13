@@ -109,11 +109,11 @@ public class TikaNativeMain {
                         stream, metadata, maxLength, pdfConfig, officeConfig, tesseractConfig, asXML);
                 // No need to close the stream because parseToString does so
             } catch (TikaException e) {
-                if (!isEpubTika198(e)) {
+                if (!isEpubLenientCandidate(e, metadata)) {
                     throw e;
                 }
                 metadata.add("X-TIKA:warning",
-                        "EpubParser strict check failed; used lenient fallback: " + rootMessage(e));
+                        "EPUB strict parse failed; used lenient fallback: " + rootMessage(e));
                 result = lenientEpubParseToString(
                         path, metadata, maxLength, pdfConfig, officeConfig, tesseractConfig, asXML);
             }
@@ -187,7 +187,7 @@ public class TikaNativeMain {
         } catch (java.io.IOException e) {
             return new StringResult((byte) 1, "IO error occurred: " + e.getMessage());
         } catch (TikaException e) {
-            if (!isEpubTika198(e)) {
+            if (!isEpubLenientCandidate(e, metadata)) {
                 return new StringResult((byte) 2, "Parse error occurred : " + e.getMessage());
             }
             // Lenient fallback: dump bytes to a temp file and retry via path-based helper
@@ -195,7 +195,7 @@ public class TikaNativeMain {
                 Path tmp = dumpToTempFile(data);
                 try {
                     metadata.add("X-TIKA:warning",
-                            "EpubParser strict check failed; used lenient fallback: " + rootMessage(e));
+                            "EPUB strict parse failed; used lenient fallback: " + rootMessage(e));
                     String result = lenientEpubParseToString(
                             tmp, metadata, maxLength, pdfConfig, officeConfig, tesseractConfig, asXML);
                     return new StringResult(result, metadata);
@@ -385,15 +385,58 @@ public class TikaNativeMain {
     }
 
     /**
-     * Detects the Tika "TIKA-198: Illegal IOException from EpubParser" wrapper, which
-     * Tika 3.3.0 raises when EpubParser's strict content-item check fails — most commonly
-     * because an OPF manifest href contains a ".." path traversal that zipFile.getEntry
-     * cannot resolve (no path normalization). The enclosing method retries via
-     * {@link #lenientEpubParseToString}.
+     * Detects Tika EPUB parser failures that should retry via {@link #lenientEpubParseToString}.
+     * Matches two known failure modes:
+     * <ul>
+     *   <li>TIKA-198 — Illegal IOException from EpubParser's strict content-item check,
+     *       typically when an OPF manifest href contains a ".." traversal that
+     *       commons-compress ZipFile.getEntry cannot resolve without path normalization.
+     *       This is always the strict content-item path, so the predicate accepts it
+     *       whenever the file is an EPUB-family container.</li>
+     *   <li>TIKA-237 — Illegal SAXException where the SAX parser failure is Tika's
+     *       TIKA-216 SecureContentHandler zip-bomb defense (default 100-level XML
+     *       element nesting) misfiring on legitimate deeply-nested XHTML content —
+     *       e.g. verse typeset as one &lt;div&gt; per line. {@code TIKA-237} is
+     *       CompositeParser's generic wrapper for <em>any</em> SAXException from
+     *       EpubParser, so this branch is gated on the root cause message to avoid
+     *       silently salvaging unrelated SAX failures (malformed XHTML, broken
+     *       entities, etc.) as successful lenient parses.</li>
+     * </ul>
+     * TIKA-198 messages consistently name EpubParser. TIKA-237 messages sometimes surface
+     * the outer composite parser instead, so the EPUB-container check also accepts the
+     * file when the detected content type is {@code application/epub+zip} or
+     * {@code application/x-ibooks+zip} (both media types are registered by EpubParser).
      */
-    private static boolean isEpubTika198(TikaException e) {
+    private static boolean isEpubLenientCandidate(TikaException e, Metadata metadata) {
         String msg = e.getMessage();
-        return msg != null && msg.contains("TIKA-198") && msg.contains("EpubParser");
+        if (msg == null) {
+            return false;
+        }
+        boolean isTika198 = msg.contains("TIKA-198");
+        boolean isTika237 = msg.contains("TIKA-237");
+        if (!isTika198 && !isTika237) {
+            return false;
+        }
+        if (!msg.contains("EpubParser") && !isEpubContentType(metadata)) {
+            return false;
+        }
+        if (isTika198) {
+            return true;
+        }
+        // TIKA-237 is the generic SAX wrapper; only fall back on the zip-bomb
+        // heuristic (see org.apache.tika.sax.SecureContentHandler) so real XML
+        // parse errors still surface as hard failures.
+        return rootMessage(e).contains("zip bomb");
+    }
+
+    /** True when metadata's detected content type is one of EpubParser's registered media types. */
+    private static boolean isEpubContentType(Metadata metadata) {
+        String contentType = metadata.get(Metadata.CONTENT_TYPE);
+        if (contentType == null) {
+            return false;
+        }
+        return contentType.startsWith("application/epub+zip")
+                || contentType.startsWith("application/x-ibooks+zip");
     }
 
     /** Walks the cause chain and returns the deepest non-empty message, or the class name. */

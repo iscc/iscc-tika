@@ -46,6 +46,18 @@
     `AutoDetectParser`, collapsing `..` via `Path.normalize`. A warning is recorded in
     `X-TIKA:warning`. See `docs/patches.md` for the full root-cause analysis. The reader-based API
     (`extract_file` / `extract_bytes`) is not yet covered and still surfaces the raw error.
+- Extend the lenient EPUB fallback to also cover `TIKA-237: Illegal SAXException` caused by
+    Tika's TIKA-216 `SecureContentHandler` zip-bomb detector (default max XML element nesting
+    100). EPUBs whose spine includes XHTML with deeply nested `<div>` content (e.g. one `<div>`
+    per line of verse) exceed the zip-bomb heuristic and throw a `SAXException` that propagates
+    as `TIKA-237`. The fallback triggers when the file is an EPUB-family container (detected via
+    either the wrapped parser name or `Metadata.CONTENT_TYPE` being `application/epub+zip` or
+    `application/x-ibooks+zip`, since the `TIKA-237` wrapper surfaces the outer composite parser
+    rather than `EpubParser`). For `TIKA-237` specifically, the predicate also requires the root
+    cause message to contain `"zip bomb"` so that unrelated SAX failures (malformed XHTML, broken
+    entities) still surface as hard errors rather than being silently salvaged. The fallback
+    re-parses each spine entry via a fresh `AutoDetectParser` invocation and records a warning in
+    `X-TIKA:warning`.
 
 ### Development
 
