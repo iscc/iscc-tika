@@ -49,6 +49,51 @@ fn test_extract_file_to_string(file_name: &str, target_dist: f64) {
     ));
 }
 
+#[test_case("2022_Q3_AAPL.pdf"; "PDF metadata")]
+#[test_case("science-exploration-1p.pptx"; "PPTX metadata")]
+#[test_case("simple.odt"; "ODT metadata")]
+#[test_case("table-multi-row-column-cells-actual.csv"; "CSV metadata")]
+#[test_case("vodafone.xlsx"; "XLSX metadata")]
+#[test_case("category-level.docx"; "DOCX metadata")]
+#[test_case("simple.doc"; "DOC metadata")]
+#[test_case("simple.pptx"; "another PPTX metadata")]
+#[test_case("winter-sports.epub"; "EPUB metadata")]
+#[test_case("bug_16.docx"; "bug16 DOCX metadata")]
+fn test_extract_file_metadata(file_name: &str) {
+    let extractor = Extractor::new();
+    let metadata = extractor
+        .extract_file_metadata(&format!("../test_files/documents/{}", file_name))
+        .unwrap();
+
+    assert!(
+        !metadata.is_empty(),
+        "metadata should not be empty for {}",
+        file_name
+    );
+    assert!(
+        metadata.contains_key("Content-Type"),
+        "Content-Type missing for {}",
+        file_name
+    );
+}
+
+#[test]
+fn test_extract_bytes_metadata() {
+    let file_bytes = std::fs::read("../test_files/documents/2022_Q3_AAPL.pdf").unwrap();
+    let metadata = Extractor::new().extract_bytes_metadata(&file_bytes).unwrap();
+    assert!(!metadata.is_empty());
+    assert!(metadata.contains_key("Content-Type"));
+}
+
+#[test]
+fn test_extract_url_metadata() {
+    let metadata = Extractor::new()
+        .extract_url_metadata("https://www.google.com/")
+        .unwrap();
+    assert!(!metadata.is_empty());
+    assert!(metadata.contains_key("Content-Type"));
+}
+
 #[test]
 #[ignore = "slow: requires Tesseract OCR"]
 fn test_extract_file_to_string_png_ocr() {

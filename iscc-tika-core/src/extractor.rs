@@ -202,6 +202,55 @@ impl Extractor {
             self.xml_output,
         )
     }
+
+    /// Extracts only metadata from a file path, skipping full text extraction for speed.
+    ///
+    /// Faster than `extract_file_to_string` on text-heavy PDFs because PDFBox glyph
+    /// rendering is skipped. The returned metadata is best-effort: Tika populates it
+    /// up to the point content parsing would begin, so keys that Tika only populates
+    /// during content iteration (e.g. `pdf:charsPerPage`) may be absent.
+    ///
+    /// If a caller needs a specific key that isn't present, fall back to
+    /// `extract_file_to_string` and discard the text.
+    pub fn extract_file_metadata(&self, file_path: &str) -> ExtractResult<Metadata> {
+        let (_, metadata) = tika::parse_file_to_string(
+            file_path,
+            0,
+            &self.pdf_config,
+            &self.office_config,
+            &self.ocr_config,
+            false,
+        )?;
+        Ok(metadata)
+    }
+
+    /// Extracts only metadata from a byte buffer, skipping full text extraction for speed.
+    /// Best-effort: see `extract_file_metadata` for contract details.
+    pub fn extract_bytes_metadata(&self, buffer: &[u8]) -> ExtractResult<Metadata> {
+        let (_, metadata) = tika::parse_bytes_to_string(
+            buffer,
+            0,
+            &self.pdf_config,
+            &self.office_config,
+            &self.ocr_config,
+            false,
+        )?;
+        Ok(metadata)
+    }
+
+    /// Extracts only metadata from a URL, skipping full text extraction for speed.
+    /// Best-effort: see `extract_file_metadata` for contract details.
+    pub fn extract_url_metadata(&self, url: &str) -> ExtractResult<Metadata> {
+        let (_, metadata) = tika::parse_url_to_string(
+            url,
+            0,
+            &self.pdf_config,
+            &self.office_config,
+            &self.ocr_config,
+            false,
+        )?;
+        Ok(metadata)
+    }
 }
 
 #[cfg(test)]

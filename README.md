@@ -69,6 +69,26 @@ print(result)
 print(metadata)
 ```
 
+- Extract only document metadata (faster for text-heavy PDFs, skips full text extraction):
+
+```python
+from iscc_tika import Extractor
+
+extractor = Extractor()
+
+# Returns just the metadata dict — no text extraction overhead.
+metadata = extractor.extract_file_metadata("README.md")
+print(metadata.get("Content-Type"))
+
+# Also available for bytes and URLs:
+# metadata = extractor.extract_bytes_metadata(buffer)
+# metadata = extractor.extract_url_metadata("https://www.google.com/")
+```
+
+Metadata is best-effort: keys that Tika only populates during content iteration
+(e.g. `pdf:charsPerPage`) may be absent. Core identification metadata
+(`Content-Type`, Dublin Core fields, Office core properties) is present.
+
 - Extracting a file(URL / bytearray) to a buffered stream:
 
 ```python
