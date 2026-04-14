@@ -46,6 +46,20 @@
 //!
 //! ```
 //!
+//! ## Extract metadata only
+//!
+//! For batch workflows that need document metadata but not the full text,
+//! `extract_file_metadata` skips content extraction and returns only the metadata.
+//! Typically 2–5× faster on text-heavy PDFs. Metadata is best-effort — see the
+//! method docstring for details.
+//!
+//! ```no_run
+//! use iscc_tika::Extractor;
+//!
+//! let metadata = Extractor::new().extract_file_metadata("README.md").unwrap();
+//! println!("{:?}", metadata.get("Content-Type"));
+//! ```
+//!
 //! ## Extract text with OCR
 //! * Make sure Tesseract is installed with the corresponding language packs. For example on debian `sudo apt install tesseract-ocr tesseract-ocr-deu` to install tesseract with German language pack.
 //! * If you get `Parse error occurred : Unable to extract PDF content`, it is most likely that the OCR language pack is not installed

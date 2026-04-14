@@ -270,6 +270,55 @@ impl Extractor {
         Ok((content, py_metadata.into()))
     }
 
+    /// Extracts only metadata from a file path, skipping full text extraction.
+    ///
+    /// Faster than `extract_file_to_string` on text-heavy PDFs because PDFBox glyph
+    /// rendering is skipped. Metadata is best-effort: some keys (e.g. pdf:charsPerPage)
+    /// may be absent because they are only populated during content iteration. If a
+    /// caller needs a specific key that isn't present, fall back to
+    /// `extract_file_to_string` and discard the text.
+    pub fn extract_file_metadata<'py>(
+        &self,
+        filename: &str,
+        py: Python<'py>,
+    ) -> PyResult<PyObject> {
+        let metadata = self
+            .0
+            .extract_file_metadata(filename)
+            .map_err(|e| PyErr::new::<PyTypeError, _>(format!("{:?}", e)))?;
+
+        let py_metadata = metadata_hashmap_to_pydict(py, &metadata)?;
+        Ok(py_metadata.into())
+    }
+
+    /// Extracts only metadata from a byte buffer, skipping full text extraction.
+    /// Best-effort: see `extract_file_metadata` for contract details.
+    pub fn extract_bytes_metadata<'py>(
+        &self,
+        buffer: &Bound<'_, PyByteArray>,
+        py: Python<'py>,
+    ) -> PyResult<PyObject> {
+        let metadata = self
+            .0
+            .extract_bytes_metadata(&buffer.to_vec())
+            .map_err(|e| PyErr::new::<PyTypeError, _>(format!("{:?}", e)))?;
+
+        let py_metadata = metadata_hashmap_to_pydict(py, &metadata)?;
+        Ok(py_metadata.into())
+    }
+
+    /// Extracts only metadata from a URL, skipping full text extraction.
+    /// Best-effort: see `extract_file_metadata` for contract details.
+    pub fn extract_url_metadata<'py>(&self, url: &str, py: Python<'py>) -> PyResult<PyObject> {
+        let metadata = self
+            .0
+            .extract_url_metadata(url)
+            .map_err(|e| PyErr::new::<PyTypeError, _>(format!("{:?}", e)))?;
+
+        let py_metadata = metadata_hashmap_to_pydict(py, &metadata)?;
+        Ok(py_metadata.into())
+    }
+
     fn __repr__(&self) -> String {
         format!("{:?}", self.0)
     }

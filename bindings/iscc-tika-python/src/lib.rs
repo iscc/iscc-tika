@@ -3,11 +3,7 @@
 pub use ::iscc_tika as ecore;
 use pyo3::prelude::*;
 
-//use pyo3::exceptions::PyTypeError;
-
 // Modules
-mod errors;
-//pub use errors::*;
 mod extractor;
 pub use extractor::*;
 mod config;

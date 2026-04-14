@@ -14,7 +14,6 @@ mod test_utils;
 #[test_case("category-level.docx", 0.9; "Test DOCX file")]
 #[test_case("simple.doc", 0.9; "Test DOC file")]
 #[test_case("simple.pptx", 0.9; "Test another PPTX file")]
-#[test_case("table-multi-row-column-cells.png", -1.0; "Test PNG file")]
 #[test_case("winter-sports.epub", 0.9; "Test EPUB file")]
 #[test_case("bug_16.docx", 0.9; "Test bug16 DOCX file")]
 //#[test_case("eng-ocr.pdf", 0.9; "Test eng-ocr PDF file")]
@@ -50,8 +49,77 @@ fn test_extract_file_to_string(file_name: &str, target_dist: f64) {
     ));
 }
 
+#[test_case("2022_Q3_AAPL.pdf"; "PDF metadata")]
+#[test_case("science-exploration-1p.pptx"; "PPTX metadata")]
+#[test_case("simple.odt"; "ODT metadata")]
+#[test_case("table-multi-row-column-cells-actual.csv"; "CSV metadata")]
+#[test_case("vodafone.xlsx"; "XLSX metadata")]
+#[test_case("category-level.docx"; "DOCX metadata")]
+#[test_case("simple.doc"; "DOC metadata")]
+#[test_case("simple.pptx"; "another PPTX metadata")]
+#[test_case("winter-sports.epub"; "EPUB metadata")]
+#[test_case("bug_16.docx"; "bug16 DOCX metadata")]
+fn test_extract_file_metadata(file_name: &str) {
+    let extractor = Extractor::new();
+    let metadata = extractor
+        .extract_file_metadata(&format!("../test_files/documents/{}", file_name))
+        .unwrap();
+
+    assert!(
+        !metadata.is_empty(),
+        "metadata should not be empty for {}",
+        file_name
+    );
+    assert!(
+        metadata.contains_key("Content-Type"),
+        "Content-Type missing for {}",
+        file_name
+    );
+}
+
 #[test]
-#[ignore = "requires Arabic tessdata and times out in constrained environments"]
+fn test_extract_bytes_metadata() {
+    let file_bytes = std::fs::read("../test_files/documents/2022_Q3_AAPL.pdf").unwrap();
+    let metadata = Extractor::new()
+        .extract_bytes_metadata(&file_bytes)
+        .unwrap();
+    assert!(!metadata.is_empty());
+    assert!(metadata.contains_key("Content-Type"));
+}
+
+#[test]
+fn test_extract_url_metadata() {
+    let metadata = Extractor::new()
+        .extract_url_metadata("https://www.google.com/")
+        .unwrap();
+    assert!(!metadata.is_empty());
+    assert!(metadata.contains_key("Content-Type"));
+}
+
+#[test]
+#[ignore = "slow: requires Tesseract OCR"]
+fn test_extract_file_to_string_png_ocr() {
+    let extractor = Extractor::new().set_extract_string_max_length(1000000);
+    let file_name = "table-multi-row-column-cells.png";
+    let (extracted, extracted_metadata) = extractor
+        .extract_file_to_string(&format!("../test_files/documents/{}", file_name))
+        .unwrap();
+    let expected =
+        fs::read_to_string(format!("../test_files/expected_result/{}.txt", file_name)).unwrap();
+    let dist = cosine(&expected.trim(), &extracted.trim());
+    println!("{}: {}", file_name, dist);
+    let expected_metadata = test_utils::parse_metadata_file(&format!(
+        "../test_files/expected_result/{}.metadata.json",
+        file_name
+    ));
+    assert!(test_utils::is_expected_metadata_contained(
+        &expected_metadata,
+        &extracted_metadata
+    ));
+}
+
+#[test]
+#[ignore = "slow: requires Arabic tessdata"]
 fn test_extract_file_to_string_ara_ocr_png() {
     let extractor = Extractor::new()
         .set_ocr_config(TesseractOcrConfig::new().set_language("ara"))
@@ -77,6 +145,7 @@ fn test_extract_file_to_string_ara_ocr_png() {
 
 #[cfg(not(target_os = "macos"))]
 #[test]
+#[ignore = "slow: requires Tesseract OCR with German tessdata"]
 fn test_extract_file_to_string_ocr_only_strategy_deu_ocr_pdf() {
     let extractor = Extractor::new()
         .set_ocr_config(TesseractOcrConfig::new().set_language("deu"))

@@ -25,7 +25,6 @@
     "source=iscc-tika-bindings-target,target=/workspace/iscc-tika/bindings/iscc-tika-python/target,type=volume"
   ],
   "containerEnv": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
     "GH_TOKEN": "${localEnv:GH_TOKEN}",
     "UV_PROJECT_ENVIRONMENT": "/home/dev/.venvs/iscc-tika",
     "GIT_CONFIG_COUNT": "1",
