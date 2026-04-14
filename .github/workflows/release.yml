@@ -28,7 +28,7 @@ jobs:
     if: inputs.version != ''
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check version matches
         run: |
           CORE_VERSION=$(grep -m1 '^version' iscc-tika-core/Cargo.toml | sed 's/.*"\(.*\)"/\1/')
@@ -55,8 +55,8 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
       - uses: dtolnay/rust-toolchain@stable
@@ -103,8 +103,8 @@ jobs:
           - os: windows-latest
             target: x64
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
 
@@ -164,7 +164,7 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: 'true'
       - name: Upload wheel
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.os }}-${{ matrix.target }}
           path: bindings/iscc-tika-python/dist
@@ -174,7 +174,7 @@ jobs:
     if: ${{ !cancelled() && !failure() }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
@@ -182,7 +182,7 @@ jobs:
           command: sdist
           args: --out dist
       - name: Upload sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-sdist
           path: bindings/iscc-tika-python/dist
@@ -194,12 +194,12 @@ jobs:
       matrix:
         python-version: ['3.10', '3.14']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: wheels-ubuntu-latest-x86_64
           path: bindings/iscc-tika-python/dist
@@ -221,7 +221,7 @@ jobs:
     if: inputs.version != '' || inputs.pypi
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check version on registry
         id: check
         run: |
@@ -234,7 +234,7 @@ jobs:
           fi
       - name: Download all artifacts
         if: steps.check.outputs.skip != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           path: dist
