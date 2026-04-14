@@ -85,9 +85,9 @@ print(metadata.get("Content-Type"))
 # metadata = extractor.extract_url_metadata("https://www.google.com/")
 ```
 
-Metadata is best-effort: keys that Tika only populates during content iteration
-(e.g. `pdf:charsPerPage`) may be absent. Core identification metadata
-(`Content-Type`, Dublin Core fields, Office core properties) is present.
+Metadata is best-effort: keys that Tika only populates during content iteration (e.g.
+`pdf:charsPerPage`) may be absent. Core identification metadata (`Content-Type`, Dublin Core fields,
+Office core properties) is present.
 
 - Extracting a file(URL / bytearray) to a buffered stream:
 

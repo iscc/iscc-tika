@@ -309,11 +309,7 @@ impl Extractor {
 
     /// Extracts only metadata from a URL, skipping full text extraction.
     /// Best-effort: see `extract_file_metadata` for contract details.
-    pub fn extract_url_metadata<'py>(
-        &self,
-        url: &str,
-        py: Python<'py>,
-    ) -> PyResult<PyObject> {
+    pub fn extract_url_metadata<'py>(&self, url: &str, py: Python<'py>) -> PyResult<PyObject> {
         let metadata = self
             .0
             .extract_url_metadata(url)

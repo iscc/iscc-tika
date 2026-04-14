@@ -80,7 +80,9 @@ fn test_extract_file_metadata(file_name: &str) {
 #[test]
 fn test_extract_bytes_metadata() {
     let file_bytes = std::fs::read("../test_files/documents/2022_Q3_AAPL.pdf").unwrap();
-    let metadata = Extractor::new().extract_bytes_metadata(&file_bytes).unwrap();
+    let metadata = Extractor::new()
+        .extract_bytes_metadata(&file_bytes)
+        .unwrap();
     assert!(!metadata.is_empty());
     assert!(metadata.contains_key("Content-Type"));
 }
