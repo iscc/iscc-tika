@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.5.0 - 2026-04-14
+
 - Added metadata-only extraction API: `extract_file_metadata`, `extract_bytes_metadata`, and
     `extract_url_metadata` on `Extractor` and the Python bindings. Skipping content extraction is
     typically 2–5× faster on text-heavy PDFs because PDFBox glyph rendering is bypassed.
