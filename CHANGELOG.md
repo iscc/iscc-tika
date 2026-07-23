@@ -1,6 +1,6 @@
 ## Changelog
 
-## Unreleased
+## 0.6.0 - 2026-07-23
 
 - **Breaking:** OCR is now disabled by default. Previously, installing a Tesseract binary silently
     activated OCR (images were OCR'd and PDFs used the `AUTO` strategy), so the same document could
