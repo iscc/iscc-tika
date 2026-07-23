@@ -43,8 +43,9 @@ comprehensive solution in Rust with Python bindings._
 - Clear and simple API for extracting text and metadata content.
 - Automatically identifies document types and extracts content accordingly.
 - Supports [many file formats](#supported-file-formats) (most formats supported by Apache Tika).
-- Extracts text from images and scanned documents with OCR through
-    [tesseract-ocr](https://github.com/tesseract-ocr/tesseract).
+- Optional OCR for images and scanned documents through
+    [tesseract-ocr](https://github.com/tesseract-ocr/tesseract) — disabled by default so extraction
+    output is identical across environments; enabled by explicit opt-in.
 - Core engine written in Rust with bindings for [Python](https://pypi.org/project/iscc-tika/).
 - Free for Commercial Use: Apache 2.0 License.
 
@@ -119,15 +120,22 @@ print(metadata)
 
 - Extracting a file with OCR:
 
-You need to have Tesseract installed with the language pack. For example on debian
-`sudo apt install tesseract-ocr tesseract-ocr-deu`
+OCR is disabled by default, even when a Tesseract binary is installed, so extraction output does not
+depend on the environment. To use it, opt in with `set_skip_ocr(False)` and have Tesseract installed
+with the needed language pack. For example on debian
+`sudo apt install tesseract-ocr tesseract-ocr-deu`. OCR of scanned PDF pages additionally requires
+an OCR strategy other than the default `NO_OCR`.
 
 ```python
-from iscc_tika import Extractor, TesseractOcrConfig
+from iscc_tika import Extractor, PdfOcrStrategy, PdfParserConfig, TesseractOcrConfig
 
-extractor = Extractor().set_ocr_config(TesseractOcrConfig().set_language("deu"))
+extractor = (
+    Extractor()
+    .set_ocr_config(TesseractOcrConfig().set_skip_ocr(False).set_language("deu"))
+    .set_pdf_config(PdfParserConfig().set_ocr_strategy(PdfOcrStrategy.OCR_ONLY))
+)
 result, metadata = extractor.extract_file_to_string(
-    "../../test_files/documents/eng-ocr.pdf"
+    "../../test_files/documents/deu-ocr.pdf"
 )
 
 print(result)
@@ -193,17 +201,20 @@ fn main() {
 
 - Extract content of PDF with OCR.
 
-You need to have Tesseract installed with the language pack. For example on debian
-`sudo apt install tesseract-ocr tesseract-ocr-deu`
+OCR is disabled by default, even when a Tesseract binary is installed, so extraction output does not
+depend on the environment. To use it, opt in with `set_skip_ocr(false)` and have Tesseract installed
+with the needed language pack. For example on debian
+`sudo apt install tesseract-ocr tesseract-ocr-deu`. OCR of scanned PDF pages additionally requires
+an OCR strategy other than the default `NO_OCR`.
 
 ```rust
-use iscc_tika::Extractor;
+use iscc_tika::{Extractor, PdfOcrStrategy, PdfParserConfig, TesseractOcrConfig};
 
 fn main() {
   let file_path = "../test_files/documents/deu-ocr.pdf";
 
     let extractor = Extractor::new()
-          .set_ocr_config(TesseractOcrConfig::new().set_language("deu"))
+          .set_ocr_config(TesseractOcrConfig::new().set_skip_ocr(false).set_language("deu"))
           .set_pdf_config(PdfParserConfig::new().set_ocr_strategy(PdfOcrStrategy::OCR_ONLY));
     // extract file with extractor
   let (content, metadata) = extractor.extract_file_to_string(file_path).unwrap();
@@ -218,12 +229,12 @@ fn main() {
 | -------------------- | ---------------------------------------- | ---------------------------------------------- |
 | **Microsoft Office** | DOC, DOCX, PPT, PPTX, XLS, XLSX, RTF     | Includes legacy and modern Office file formats |
 | **OpenOffice**       | ODT, ODS, ODP                            | OpenDocument formats                           |
-| **PDF**              | PDF                                      | Can extracts embedded content and supports OCR |
+| **PDF**              | PDF                                      | Extracts embedded content; optional opt-in OCR |
 | **Spreadsheets**     | CSV, TSV                                 | Plain text spreadsheet formats                 |
 | **Web Documents**    | HTML, XML                                | Parses and extracts content from web documents |
 | **E-Books**          | EPUB                                     | EPUB format for electronic books               |
 | **Text Files**       | TXT, Markdown                            | Plain text formats                             |
-| **Images**           | PNG, JPEG, TIFF, BMP, GIF, ICO, PSD, SVG | Extracts embedded text with OCR                |
+| **Images**           | PNG, JPEG, TIFF, BMP, GIF, ICO, PSD, SVG | Extracts metadata; optional opt-in OCR         |
 | **E-Mail**           | EML, MSG, MBOX, PST                      | Extracts content, headers, and attachments     |
 
 ## Development

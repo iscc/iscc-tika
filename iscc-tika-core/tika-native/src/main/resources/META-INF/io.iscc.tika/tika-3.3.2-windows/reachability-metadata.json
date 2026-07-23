@@ -880,6 +880,12 @@
                     ]
                 },
                 {
+                    "name": "setSkipOcr",
+                    "parameterTypes": [
+                        "boolean"
+                    ]
+                },
+                {
                     "name": "setTimeoutSeconds",
                     "parameterTypes": [
                         "int"

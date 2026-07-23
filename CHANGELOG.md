@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Breaking:** OCR is now disabled by default. Previously, installing a Tesseract binary silently
+    activated OCR (images were OCR'd and PDFs used the `AUTO` strategy), so the same document could
+    produce different extraction output — text and metadata — depending on the environment, and text
+    extraction slowed down considerably. Extraction output is now identical whether or not Tesseract
+    is installed. OCR remains fully supported as an explicit opt-in:
+    `TesseractOcrConfig().set_skip_ocr(False)` enables it, and OCR of scanned PDF pages additionally
+    requires a `PdfOcrStrategy` other than the default (now `NO_OCR`, previously `AUTO`).
+- Deactivated the OCR test suite (skip-marked, not removed) and removed the Tesseract installs from
+    CI. Active regression tests assert that a default extractor never produces OCR output even with
+    Tesseract installed.
 - Fixed macOS wheels crashing with `NoClassDefFoundError: javax.imageio.ImageIO` on any document
     that reaches the image parser ([#8](https://github.com/iscc/iscc-tika/issues/8)). GraalVM CE
     does not support AWT in native-image on macOS; the native library is now built with Bellsoft

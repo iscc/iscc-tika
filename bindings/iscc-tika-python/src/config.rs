@@ -54,7 +54,9 @@ impl PdfParserConfig {
     }
 
     /// Sets the OCR strategy for PDF parsing.
-    /// Default: AUTO.
+    /// Running OCR additionally requires opting in via
+    /// `TesseractOcrConfig.set_skip_ocr(False)`.
+    /// Default: NO_OCR.
     pub fn set_ocr_strategy(&self, val: PdfOcrStrategy) -> PyResult<Self> {
         let inner = self.0.clone().set_ocr_strategy(val.into());
         Ok(Self(inner))
@@ -227,6 +229,9 @@ impl OfficeParserConfig {
 /// Tesseract OCR configuration settings
 ///
 /// These settings are used to configure the behavior of the optical image recognition.
+/// OCR is disabled by default (`skip_ocr: True`) so extraction output does not depend
+/// on whether a Tesseract binary happens to be installed; enable it explicitly with
+/// `set_skip_ocr(False)`.
 #[pyclass]
 #[derive(Clone, PartialEq)]
 pub struct TesseractOcrConfig(ecore::TesseractOcrConfig);
@@ -249,6 +254,16 @@ impl TesseractOcrConfig {
     #[new]
     pub fn new() -> Self {
         Self(ecore::TesseractOcrConfig::new())
+    }
+
+    /// Sets whether OCR is skipped entirely. While True, images are never routed
+    /// through Tesseract — even when a Tesseract binary is installed — so extraction
+    /// output stays identical across environments. Set to False to enable OCR; PDF
+    /// page OCR additionally requires a `PdfOcrStrategy` other than NO_OCR.
+    /// Default: True.
+    pub fn set_skip_ocr(&self, val: bool) -> PyResult<Self> {
+        let inner = self.0.clone().set_skip_ocr(val);
+        Ok(Self(inner))
     }
 
     /// Sets whether Tesseract should apply rotation to the image before OCR.

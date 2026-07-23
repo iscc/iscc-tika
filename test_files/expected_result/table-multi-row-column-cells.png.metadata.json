@@ -34,16 +34,14 @@
     ],
     "X-TIKA:Parsed-By-Full-Set": [
         "org.apache.tika.parser.DefaultParser",
-        "org.apache.tika.parser.image.ImageParser",
-        "org.apache.tika.parser.ocr.TesseractOCRParser"
+        "org.apache.tika.parser.image.ImageParser"
     ],
     "Data PlanarConfiguration": [
         "PixelInterleaved"
     ],
     "X-TIKA:Parsed-By": [
         "org.apache.tika.parser.DefaultParser",
-        "org.apache.tika.parser.image.ImageParser",
-        "org.apache.tika.parser.ocr.TesseractOCRParser"
+        "org.apache.tika.parser.image.ImageParser"
     ],
     "Chroma BlackIsZero": [
         "true"

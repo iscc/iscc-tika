@@ -46,8 +46,7 @@
     "X-TIKA:Parsed-By-Full-Set": [
         "org.apache.tika.parser.DefaultParser",
         "org.apache.tika.parser.microsoft.ooxml.OOXMLParser",
-        "org.apache.tika.parser.image.ImageParser",
-        "org.apache.tika.parser.ocr.TesseractOCRParser"
+        "org.apache.tika.parser.image.ImageParser"
     ],
     "extended-properties:TotalTime": [
         "5296"

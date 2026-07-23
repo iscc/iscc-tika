@@ -4,10 +4,10 @@ use strum_macros::{Display, EnumString};
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Display, EnumString)]
 #[allow(non_camel_case_types)]
 pub enum PdfOcrStrategy {
+    #[default]
     NO_OCR,
     OCR_ONLY,
     OCR_AND_TEXT_EXTRACTION,
-    #[default]
     AUTO,
 }
 
@@ -25,8 +25,10 @@ pub struct PdfParserConfig {
 
 impl Default for PdfParserConfig {
     fn default() -> Self {
+        // Tika's own default is AUTO; NO_OCR keeps extraction output
+        // independent of whether a Tesseract binary happens to be installed.
         Self {
-            ocr_strategy: PdfOcrStrategy::AUTO,
+            ocr_strategy: PdfOcrStrategy::NO_OCR,
             extract_inline_images: false,
             extract_unique_inline_images_only: true,
             extract_marked_content: false,
@@ -42,7 +44,9 @@ impl PdfParserConfig {
     }
 
     /// Sets the OCR strategy for PDF parsing.
-    /// Default: AUTO.
+    /// Running OCR additionally requires opting in via
+    /// `TesseractOcrConfig::set_skip_ocr(false)`.
+    /// Default: NO_OCR.
     pub fn set_ocr_strategy(mut self, val: PdfOcrStrategy) -> Self {
         self.ocr_strategy = val;
         self
@@ -220,8 +224,12 @@ impl OfficeParserConfig {
 /// Tesseract OCR configuration settings
 ///
 /// These settings are used to configure the behavior of the optical image recognition.
+/// OCR is disabled by default (`skip_ocr: true`) so extraction output does not depend
+/// on whether a Tesseract binary happens to be installed; enable it explicitly with
+/// [`TesseractOcrConfig::set_skip_ocr`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct TesseractOcrConfig {
+    pub(crate) skip_ocr: bool,
     pub(crate) density: i32,
     pub(crate) depth: i32,
     pub(crate) timeout_seconds: i32,
@@ -233,6 +241,7 @@ pub struct TesseractOcrConfig {
 impl Default for TesseractOcrConfig {
     fn default() -> Self {
         Self {
+            skip_ocr: true,
             density: 300,
             depth: 4,
             timeout_seconds: 130,
@@ -247,6 +256,16 @@ impl TesseractOcrConfig {
     /// Creates a new instance of TesseractOcrConfig with default settings.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Sets whether OCR is skipped entirely. While true, images are never routed
+    /// through Tesseract — even when a Tesseract binary is installed — so extraction
+    /// output stays identical across environments. Set to false to enable OCR; PDF
+    /// page OCR additionally requires a [`crate::PdfOcrStrategy`] other than NO_OCR.
+    /// Default: true.
+    pub fn set_skip_ocr(mut self, val: bool) -> Self {
+        self.skip_ocr = val;
+        self
     }
 
     /// Sets whether Tesseract should apply rotation to the image before OCR.

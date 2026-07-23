@@ -376,6 +376,13 @@ impl<'local> JTesseractOcrConfig<'local> {
         jni_call_method(
             env,
             &obj,
+            "setSkipOcr",
+            "(Z)V",
+            &[JValue::from(config.skip_ocr)],
+        )?;
+        jni_call_method(
+            env,
+            &obj,
             "setDensity",
             "(I)V",
             &[JValue::from(config.density)],

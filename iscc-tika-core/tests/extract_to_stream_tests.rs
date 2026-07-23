@@ -58,9 +58,9 @@ fn test_extract_bytes_to_stream(file_name: &str, target_dist: f64) {
 }
 
 #[test]
-#[ignore = "slow: requires Tesseract OCR"]
+#[ignore = "deactivated: OCR is opt-in and requires a local Tesseract install"]
 fn test_extract_bytes_to_stream_png_ocr() {
-    let extractor = Extractor::new();
+    let extractor = Extractor::new().set_ocr_config(TesseractOcrConfig::new().set_skip_ocr(false));
     let file_name = "table-multi-row-column-cells.png";
     let bytes = fs::read(&format!("../test_files/documents/{}", file_name)).unwrap();
     let (mut stream, metadata) = extractor.extract_bytes(&bytes).unwrap();
@@ -86,10 +86,14 @@ fn test_extract_bytes_to_stream_png_ocr() {
 }
 
 #[test]
-#[ignore = "slow: requires Arabic tessdata"]
+#[ignore = "deactivated: OCR is opt-in and requires Arabic tessdata"]
 fn test_extract_bytes_to_stream_ara_ocr_png() {
     let extractor = Extractor::new()
-        .set_ocr_config(TesseractOcrConfig::new().set_language("ara"))
+        .set_ocr_config(
+            TesseractOcrConfig::new()
+                .set_skip_ocr(false)
+                .set_language("ara"),
+        )
         .set_pdf_config(PdfParserConfig::new().set_ocr_strategy(PdfOcrStrategy::NO_OCR));
 
     // extract file with extractor

@@ -97,9 +97,33 @@ fn test_extract_url_metadata() {
 }
 
 #[test]
-#[ignore = "slow: requires Tesseract OCR"]
+fn test_ocr_disabled_by_default_png() {
+    // Guards deterministic extraction output: even with a Tesseract binary
+    // installed, a default Extractor must never OCR images.
+    let extractor = Extractor::new();
+    let (extracted, _metadata) = extractor
+        .extract_file_to_string("../test_files/documents/ara-ocr.png")
+        .unwrap();
+    assert_eq!("", extracted.trim());
+}
+
+#[test]
+fn test_ocr_disabled_by_default_pdf() {
+    // Guards deterministic extraction output: a default Extractor must never
+    // OCR scanned PDF pages, regardless of the environment.
+    let extractor = Extractor::new();
+    let (extracted, _metadata) = extractor
+        .extract_file_to_string("../test_files/documents/deu-ocr.pdf")
+        .unwrap();
+    assert_eq!("", extracted.trim());
+}
+
+#[test]
+#[ignore = "deactivated: OCR is opt-in and requires a local Tesseract install"]
 fn test_extract_file_to_string_png_ocr() {
-    let extractor = Extractor::new().set_extract_string_max_length(1000000);
+    let extractor = Extractor::new()
+        .set_extract_string_max_length(1000000)
+        .set_ocr_config(TesseractOcrConfig::new().set_skip_ocr(false));
     let file_name = "table-multi-row-column-cells.png";
     let (extracted, extracted_metadata) = extractor
         .extract_file_to_string(&format!("../test_files/documents/{}", file_name))
@@ -119,10 +143,14 @@ fn test_extract_file_to_string_png_ocr() {
 }
 
 #[test]
-#[ignore = "slow: requires Arabic tessdata"]
+#[ignore = "deactivated: OCR is opt-in and requires Arabic tessdata"]
 fn test_extract_file_to_string_ara_ocr_png() {
     let extractor = Extractor::new()
-        .set_ocr_config(TesseractOcrConfig::new().set_language("ara"))
+        .set_ocr_config(
+            TesseractOcrConfig::new()
+                .set_skip_ocr(false)
+                .set_language("ara"),
+        )
         .set_pdf_config(PdfParserConfig::new().set_ocr_strategy(PdfOcrStrategy::NO_OCR));
     // extract file with extractor
     let (extracted, _metadata) = extractor
@@ -145,10 +173,14 @@ fn test_extract_file_to_string_ara_ocr_png() {
 
 #[cfg(not(target_os = "macos"))]
 #[test]
-#[ignore = "slow: requires Tesseract OCR with German tessdata"]
+#[ignore = "deactivated: OCR is opt-in and requires German tessdata"]
 fn test_extract_file_to_string_ocr_only_strategy_deu_ocr_pdf() {
     let extractor = Extractor::new()
-        .set_ocr_config(TesseractOcrConfig::new().set_language("deu"))
+        .set_ocr_config(
+            TesseractOcrConfig::new()
+                .set_skip_ocr(false)
+                .set_language("deu"),
+        )
         .set_pdf_config(
             PdfParserConfig::new()
                 .set_ocr_strategy(PdfOcrStrategy::OCR_AND_TEXT_EXTRACTION)

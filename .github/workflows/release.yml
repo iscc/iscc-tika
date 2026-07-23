@@ -214,14 +214,6 @@ jobs:
         with:
           name: ${{ matrix.artifact }}
           path: bindings/iscc-tika-python/dist
-      - name: Install Tesseract (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara
-      - name: Install Tesseract (macOS)
-        if: runner.os == 'macOS'
-        run: brew install tesseract tesseract-lang
       - name: Install and test
         shell: bash
         run: |

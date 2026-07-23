@@ -74,8 +74,6 @@ jobs:
         shell: bash
         run: |
           set -e
-          sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara
           python3 -m venv .venv
           source .venv/bin/activate
           pip install iscc-tika --find-links bindings/iscc-tika-python/dist --no-index --force-reinstall
