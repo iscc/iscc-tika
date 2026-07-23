@@ -49,7 +49,8 @@
     ],
     "X-TIKA:Parsed-By": [
         "org.apache.tika.parser.DefaultParser",
-        "org.apache.tika.parser.microsoft.ooxml.OOXMLParser"
+        "org.apache.tika.parser.microsoft.ooxml.OOXMLParser",
+        "org.apache.tika.parser.microsoft.ooxml.xslf.XSLFEventBasedPowerPointExtractor"
     ],
     "extended-properties:AppVersion": [
         "16.0016"

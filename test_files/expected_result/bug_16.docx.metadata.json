@@ -1,7 +1,8 @@
 {
     "X-TIKA:Parsed-By": [
         "org.apache.tika.parser.DefaultParser",
-        "org.apache.tika.parser.microsoft.ooxml.OOXMLParser"
+        "org.apache.tika.parser.microsoft.ooxml.OOXMLParser",
+        "org.apache.tika.parser.microsoft.ooxml.xwpf.XWPFEventBasedWordExtractor"
     ],
     "dcterms:created": [
         "2013-12-23T23:15:00Z"
@@ -27,9 +28,6 @@
     "cp:revision": [
         "12"
     ],
-    "extended-properties:Company": [
-        ""
-    ],
     "Content-Length": [
         "27615"
     ],
@@ -51,9 +49,6 @@
     ],
     "meta:page-count": [
         "1"
-    ],
-    "dc:publisher": [
-        ""
     ],
     "meta:character-count-with-spaces": [
         "9"
