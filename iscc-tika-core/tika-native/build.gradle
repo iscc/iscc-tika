@@ -4,7 +4,7 @@ plugins {
 }
 
 
-def tikaVersion = "3.3.0"
+def tikaVersion = "3.3.2"
 def numThreads = Runtime.getRuntime().availableProcessors()
 def currentOs = org.gradle.internal.os.OperatingSystem.current()
 
