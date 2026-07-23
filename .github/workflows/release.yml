@@ -98,6 +98,8 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64
+          - os: ubuntu-24.04-arm
+            target: aarch64
           - os: macos-latest
             target: aarch64
           - os: windows-latest
@@ -108,7 +110,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      # --- Linux: GraalVM installed inside manylinux container via script ---
+      # --- Linux: JDK auto-downloaded by build.rs inside manylinux container ---
       - name: Build wheel (Linux)
         if: runner.os == 'Linux'
         uses: PyO3/maturin-action@v1
@@ -122,14 +124,11 @@ jobs:
           target: ${{ matrix.target }}
           container: quay.io/pypa/manylinux_2_28_${{ matrix.target }}:latest
           before-script-linux: |
-            .github/workflows/install-graalvm.sh 23.0.1
+            yum install -y zip openssl-devel
             export PATH="/opt/python/cp310-cp310/bin:$PATH"
             > .cargo/config.toml
-          docker-options: >-
-            -e JAVA_HOME=/opt/graalvm
-            -e GRAALVM_HOME=/opt/graalvm
 
-      # --- macOS: GraalVM auto-downloaded by build.rs ---
+      # --- macOS: JDK auto-downloaded by build.rs ---
       - name: Build wheel (macOS)
         if: runner.os == 'macOS'
         uses: PyO3/maturin-action@v1
@@ -147,14 +146,7 @@ jobs:
           pip install wheel
           bash .github/workflows/patch-wheel-lib-macos.sh bindings/iscc-tika-python/dist
 
-      # --- Windows: GraalVM via setup action ---
-      - name: Setup GraalVM (Windows)
-        if: runner.os == 'Windows'
-        uses: graalvm/setup-graalvm@v1.2.5
-        with:
-          java-version: '23'
-          distribution: graalvm-community
-          set-java-home: 'true'
+      # --- Windows: JDK auto-downloaded by build.rs ---
       - name: Build wheel (Windows)
         if: runner.os == 'Windows'
         uses: PyO3/maturin-action@v1
@@ -187,12 +179,28 @@ jobs:
           name: wheels-sdist
           path: bindings/iscc-tika-python/dist
   test-wheels:
-    name: Test wheel (Python ${{ matrix.python-version }})
+    name: Test wheel (${{ matrix.os }}, Python ${{ matrix.python-version }})
     needs: [build-wheels]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ['3.10', '3.14']
+        include:
+          - os: ubuntu-latest
+            python-version: '3.10'
+            artifact: wheels-ubuntu-latest-x86_64
+          - os: ubuntu-latest
+            python-version: '3.14'
+            artifact: wheels-ubuntu-latest-x86_64
+          - os: ubuntu-24.04-arm
+            python-version: '3.12'
+            artifact: wheels-ubuntu-24.04-arm-aarch64
+          - os: macos-latest
+            python-version: '3.12'
+            artifact: wheels-macos-latest-aarch64
+          - os: windows-latest
+            python-version: '3.12'
+            artifact: wheels-windows-latest-x64
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
@@ -201,16 +209,26 @@ jobs:
           allow-prereleases: true
       - uses: actions/download-artifact@v8
         with:
-          name: wheels-ubuntu-latest-x86_64
+          name: ${{ matrix.artifact }}
           path: bindings/iscc-tika-python/dist
+      - name: Install Tesseract (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara
+      - name: Install Tesseract (macOS)
+        if: runner.os == 'macOS'
+        run: brew install tesseract tesseract-lang
       - name: Install and test
         shell: bash
         run: |
           set -e
-          sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara
-          python3 -m venv .venv
-          source .venv/bin/activate
+          python -m venv .venv
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            source .venv/Scripts/activate
+          else
+            source .venv/bin/activate
+          fi
           pip install iscc-tika --find-links bindings/iscc-tika-python/dist --no-index --force-reinstall
           pip install pytest pytest-timeout scikit-learn lxml
           cd bindings/iscc-tika-python
