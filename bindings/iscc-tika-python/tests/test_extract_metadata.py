@@ -6,7 +6,6 @@ docstring for details.
 """
 
 import pytest
-
 from iscc_tika import Extractor
 from utils import read_file_to_bytearray
 

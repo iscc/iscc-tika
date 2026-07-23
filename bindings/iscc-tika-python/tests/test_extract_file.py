@@ -1,12 +1,12 @@
 import json
-import pytest
 
+import pytest
 from iscc_tika import Extractor
 from utils import (
     calculate_similarity_percent,
     cosine_similarity,
-    read_to_string,
     extract_body_text,
+    read_to_string,
 )
 
 TEST_CASES = [

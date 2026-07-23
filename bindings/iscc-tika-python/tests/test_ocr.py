@@ -1,7 +1,6 @@
 import sys
 
 import pytest
-
 from iscc_tika import Extractor, PdfOcrStrategy, PdfParserConfig, TesseractOcrConfig
 from utils import cosine_similarity
 
@@ -14,7 +13,7 @@ def test_ocr_disabled_by_default_png():
     # Guards deterministic extraction output: even with a Tesseract binary
     # installed, a default Extractor must never OCR images.
     extractor = Extractor()
-    result, metadata = extractor.extract_file_to_string(
+    result, _metadata = extractor.extract_file_to_string(
         "../../test_files/documents/ara-ocr.png"
     )
 
@@ -25,7 +24,7 @@ def test_ocr_disabled_by_default_pdf():
     # Guards deterministic extraction output: a default Extractor must never
     # OCR scanned PDF pages, regardless of the environment.
     extractor = Extractor()
-    result, metadata = extractor.extract_file_to_string(
+    result, _metadata = extractor.extract_file_to_string(
         "../../test_files/documents/deu-ocr.pdf"
     )
 
@@ -43,7 +42,7 @@ def test_ara_ocr_png():
         .set_timeout_seconds(600)
     )
     extractor = Extractor().set_ocr_config(ocr_config)
-    result, metadata = extractor.extract_file_to_string(
+    result, _metadata = extractor.extract_file_to_string(
         "../../test_files/documents/ara-ocr.png"
     )
 
@@ -75,7 +74,7 @@ def test_extract_file_to_string_ocr_only_strategy_deu_ocr_pdf():
     extractor = extractor.set_ocr_config(ocr_config)
     extractor = extractor.set_pdf_config(pdf_config)
 
-    result, metadata = extractor.extract_file_to_string(test_file)
+    result, _metadata = extractor.extract_file_to_string(test_file)
 
     with open(expected_result_file, "r", encoding="utf8") as file:
         expected = file.read()
@@ -96,6 +95,6 @@ def test_test_extract_file_to_string_no_ocr_strategy_deu_ocr_pdf():
 
     extractor = Extractor().set_ocr_config(ocr_config).set_pdf_config(pdf_config)
 
-    result, metadata = extractor.extract_file_to_string(test_file)
+    result, _metadata = extractor.extract_file_to_string(test_file)
 
     assert result.strip() == ""
