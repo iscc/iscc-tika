@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Setup tika-native libraries for iscc-tika Rust build.
 
-Downloads GraalVM JDK if needed, runs the Gradle native compilation, and copies
+Downloads a native-image JDK if needed, runs the Gradle native compilation, and copies
 build artifacts to the locations expected by cargo and the Python bindings.
 Called from build.rs — uses only Python stdlib (no pip dependencies).
 """
@@ -18,22 +18,27 @@ import zipfile
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-GRAALVM_URLS: dict[tuple[str, str], dict[str, str]] = {
+# macOS and Linux use Bellsoft Liberica NIK because it ships AWT/ImageIO support
+# in native-image on those platforms; GraalVM CE lacks AWT on macOS, which makes
+# image-bearing documents crash with NoClassDefFoundError: javax.imageio.ImageIO
+# (https://github.com/iscc/iscc-tika/issues/8). Windows stays on GraalVM CE,
+# which supports AWT there.
+JDK_DOWNLOADS: dict[tuple[str, str], dict[str, str]] = {
     ("windows", "x86_64"): {
         "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_windows-x64_bin.zip",
         "main_dir": "graalvm-community-openjdk-25.0.2+10.1",
     },
     ("macos", "aarch64"): {
-        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_macos-aarch64_bin.tar.gz",
-        "main_dir": "graalvm-community-openjdk-25.0.2+10.1/Contents/Home",
+        "url": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.4+1-25.0.4+10/bellsoft-liberica-vm-openjdk25.0.4+10-25.0.4+1-macos-aarch64.tar.gz",
+        "main_dir": "bellsoft-liberica-vm-openjdk25-25.0.4/Contents/Home",
     },
     ("linux", "x86_64"): {
-        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-x64_bin.tar.gz",
-        "main_dir": "graalvm-community-openjdk-25.0.2+10.1",
+        "url": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.4+1-25.0.4+10/bellsoft-liberica-vm-openjdk25.0.4+10-25.0.4+1-linux-amd64.tar.gz",
+        "main_dir": "bellsoft-liberica-vm-openjdk25-25.0.4",
     },
     ("linux", "aarch64"): {
-        "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_linux-aarch64_bin.tar.gz",
-        "main_dir": "graalvm-community-openjdk-25.0.2+10.1",
+        "url": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.4+1-25.0.4+10/bellsoft-liberica-vm-openjdk25.0.4+10-25.0.4+1-linux-aarch64.tar.gz",
+        "main_dir": "bellsoft-liberica-vm-openjdk25-25.0.4",
     },
 }
 
@@ -108,13 +113,13 @@ def check_graalvm(graalvm_home: Path, target_os: str) -> bool:
 
 
 def graalvm_install_help() -> str:
-    """Return a help message for manual GraalVM installation."""
+    """Return a help message for manual native-image JDK installation."""
     return (
         "We recommend using sdkman to install and manage different JDKs.\n"
         "See https://sdkman.io/usage for more information.\n"
-        "You can install graalvm using:\n"
-        "  sdk install java 25.0.2-graalce\n"
-        "  sdk use java 25.0.2-graalce"
+        "You can install a native-image capable JDK using:\n"
+        "  sdk install java 25.0.3.r25-nik   # Liberica NIK (macOS/Linux, has AWT)\n"
+        "  sdk install java 25.0.2-graalce   # GraalVM CE (Windows)"
     )
 
 
@@ -143,12 +148,12 @@ def get_graalvm_home(install_dir: Path, target_os: str, target_arch: str) -> Pat
 
 
 def install_graalvm(install_dir: Path, target_os: str, target_arch: str) -> Path:
-    """Download and extract GraalVM CE for the given platform."""
+    """Download and extract the native-image JDK for the given platform."""
     key = (target_os, target_arch)
-    if key not in GRAALVM_URLS:
+    if key not in JDK_DOWNLOADS:
         sys.exit(f"Unsupported platform: {target_os}/{target_arch}")
 
-    config = GRAALVM_URLS[key]
+    config = JDK_DOWNLOADS[key]
     url = config["url"]
     main_dir = config["main_dir"]
     graalvm_home = install_dir / main_dir
@@ -157,8 +162,10 @@ def install_graalvm(install_dir: Path, target_os: str, target_arch: str) -> Path
         return graalvm_home
 
     install_dir.mkdir(parents=True, exist_ok=True)
+    # Name the archive after the download so a cached archive from a
+    # different JDK distribution or version is never reused by mistake
+    archive_path = install_dir / url.rsplit("/", 1)[-1]
     archive_ext = "zip" if url.endswith(".zip") else "tar.gz"
-    archive_path = install_dir / f"graalvm-ce-archive.{archive_ext}"
 
     # Download (read fully into memory to avoid corrupt partial files)
     if not archive_path.exists():

@@ -539,6 +539,9 @@
                     "name": "numComponents"
                 },
                 {
+                    "name": "pData"
+                },
+                {
                     "name": "supportsAlpha"
                 },
                 {
