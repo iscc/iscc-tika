@@ -89,7 +89,10 @@ graalvmNative {
                     "-H:+ReportExceptionStackTraces"
             )
             jvmArgs.add('-Djava.awt.headless=true')
-            requiredVersion = '25' // The minimal GraalVM version, can be `MAJOR`, `MAJOR.MINOR` or `MAJOR.MINOR.PATCH`
+            // macOS builds with Liberica NIK 24.1.1 (JDK 23) because the NIK 25
+            // AWT loader cannot serve shared libraries there (see
+            // setup_tika_native.py); other platforms require GraalVM 25.
+            requiredVersion = currentOs.isMacOsX() ? '23' : '25'
         }
     }
 }

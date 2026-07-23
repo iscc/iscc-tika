@@ -23,14 +23,22 @@ from urllib.request import Request, urlopen
 # image-bearing documents crash with NoClassDefFoundError: javax.imageio.ImageIO
 # (https://github.com/iscc/iscc-tika/issues/8). Windows stays on GraalVM CE,
 # which supports AWT there.
+#
+# macOS is pinned to NIK 24.1.1 (JDK 23) instead of the NIK 25 line: on JDK 25
+# the AWT loader gates the statically linked lwawt toolkit behind
+# JVM_IsStaticallyLinked(), which is false for native-image shared libraries,
+# so the image tries to dlopen a libawt_lwawt.dylib that NIK never emits next
+# to the image (its @rpath deps also require an unshippable libjvm.dylib).
+# NIK 24.1.1 wires lwawt statically without that check — the same toolchain
+# that produced the working 0.4.0 macOS wheels.
 JDK_DOWNLOADS: dict[tuple[str, str], dict[str, str]] = {
     ("windows", "x86_64"): {
         "url": "https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-25.0.2/graalvm-community-jdk-25.0.2_windows-x64_bin.zip",
         "main_dir": "graalvm-community-openjdk-25.0.2+10.1",
     },
     ("macos", "aarch64"): {
-        "url": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.4+1-25.0.4+10/bellsoft-liberica-vm-openjdk25.0.4+10-25.0.4+1-macos-aarch64.tar.gz",
-        "main_dir": "bellsoft-liberica-vm-openjdk25-25.0.4/Contents/Home",
+        "url": "https://github.com/bell-sw/LibericaNIK/releases/download/24.1.1+1-23.0.1+13/bellsoft-liberica-vm-openjdk23.0.1+13-24.1.1+1-macos-aarch64.tar.gz",
+        "main_dir": "bellsoft-liberica-vm-openjdk23-24.1.1/Contents/Home",
     },
     ("linux", "x86_64"): {
         "url": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.4+1-25.0.4+10/bellsoft-liberica-vm-openjdk25.0.4+10-25.0.4+1-linux-amd64.tar.gz",
@@ -118,7 +126,8 @@ def graalvm_install_help() -> str:
         "We recommend using sdkman to install and manage different JDKs.\n"
         "See https://sdkman.io/usage for more information.\n"
         "You can install a native-image capable JDK using:\n"
-        "  sdk install java 25.0.3.r25-nik   # Liberica NIK (macOS/Linux, has AWT)\n"
+        "  sdk install java 24.1.1.r23-nik   # Liberica NIK (macOS, static AWT)\n"
+        "  sdk install java 25.0.3.r25-nik   # Liberica NIK (Linux, has AWT)\n"
         "  sdk install java 25.0.2-graalce   # GraalVM CE (Windows)"
     )
 
