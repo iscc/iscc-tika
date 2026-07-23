@@ -1,6 +1,6 @@
+from lxml import etree
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity as cosine_sim
-from lxml import etree
 
 
 def cosine_similarity(text1, text2):

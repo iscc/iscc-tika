@@ -1,5 +1,5 @@
 from iscc_tika import Extractor
-from utils import read_to_string, extract_body_text
+from utils import extract_body_text, read_to_string
 
 
 def expected_result():
@@ -8,7 +8,7 @@ def expected_result():
 
 def test_extract_file_to_string():
     extractor = Extractor()
-    result, metadata = extractor.extract_file_to_string("tests/quarkus.pdf")
+    result, _metadata = extractor.extract_file_to_string("tests/quarkus.pdf")
 
     print(f"test_pdf:test_extract_file_to_string result = {result}")
     assert result == expected_result()
@@ -16,7 +16,7 @@ def test_extract_file_to_string():
 
 def test_extract_file():
     extractor = Extractor()
-    reader, metadata = extractor.extract_file("tests/quarkus.pdf")
+    reader, _metadata = extractor.extract_file("tests/quarkus.pdf")
 
     result = read_to_string(reader)
 
@@ -27,7 +27,7 @@ def test_extract_file():
 def test_extract_file_as_xml():
     extractor = Extractor()
     extractor = extractor.set_xml_output(True)
-    reader, metadata = extractor.extract_file("tests/quarkus.pdf")
+    reader, _metadata = extractor.extract_file("tests/quarkus.pdf")
 
     result_xml = read_to_string(reader)
 
@@ -41,7 +41,7 @@ def test_extract_bytes():
 
     with open("tests/quarkus.pdf", "rb") as file:
         buffer = bytearray(file.read())
-    reader, metadata = extractor.extract_bytes(buffer)
+    reader, _metadata = extractor.extract_bytes(buffer)
 
     result = read_to_string(reader)
 
@@ -55,7 +55,7 @@ def test_extract_bytes_as_xml():
 
     with open("tests/quarkus.pdf", "rb") as file:
         buffer = bytearray(file.read())
-    reader, metadata = extractor.extract_bytes(buffer)
+    reader, _metadata = extractor.extract_bytes(buffer)
 
     result_xml = read_to_string(reader)
 

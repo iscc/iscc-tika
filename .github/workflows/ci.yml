@@ -46,12 +46,9 @@ jobs:
           target: x86_64
           container: quay.io/pypa/manylinux_2_28_x86_64:latest
           before-script-linux: |
-            .github/workflows/install-graalvm.sh 23.0.1
+            yum install -y zip openssl-devel
             export PATH="/opt/python/cp310-cp310/bin:$PATH"
             > .cargo/config.toml
-          docker-options: >-
-            -e JAVA_HOME=/opt/graalvm
-            -e GRAALVM_HOME=/opt/graalvm
       - uses: actions/upload-artifact@v7
         with:
           name: test-wheel
@@ -77,8 +74,6 @@ jobs:
         shell: bash
         run: |
           set -e
-          sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-deu tesseract-ocr-ara
           python3 -m venv .venv
           source .venv/bin/activate
           pip install iscc-tika --find-links bindings/iscc-tika-python/dist --no-index --force-reinstall

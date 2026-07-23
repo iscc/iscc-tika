@@ -539,6 +539,9 @@
                     "name": "numComponents"
                 },
                 {
+                    "name": "pData"
+                },
+                {
                     "name": "supportsAlpha"
                 },
                 {
@@ -857,6 +860,12 @@
                     "name": "setLanguage",
                     "parameterTypes": [
                         "java.lang.String"
+                    ]
+                },
+                {
+                    "name": "setSkipOcr",
+                    "parameterTypes": [
+                        "boolean"
                     ]
                 },
                 {

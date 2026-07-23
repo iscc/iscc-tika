@@ -1,6 +1,38 @@
 ## Changelog
 
-## Unreleased
+## 0.6.0 - 2026-07-23
+
+- **Breaking:** OCR is now disabled by default. Previously, installing a Tesseract binary silently
+    activated OCR (images were OCR'd and PDFs used the `AUTO` strategy), so the same document could
+    produce different extraction output — text and metadata — depending on the environment, and text
+    extraction slowed down considerably. Extraction output is now identical whether or not Tesseract
+    is installed. OCR remains fully supported as an explicit opt-in:
+    `TesseractOcrConfig().set_skip_ocr(False)` enables it, and OCR of scanned PDF pages additionally
+    requires a `PdfOcrStrategy` other than the default (now `NO_OCR`, previously `AUTO`).
+- Deactivated the OCR test suite (skip-marked, not removed) and removed the Tesseract installs from
+    CI. Active regression tests assert that a default extractor never produces OCR output even with
+    Tesseract installed.
+- Fixed macOS wheels crashing with `NoClassDefFoundError: javax.imageio.ImageIO` on any document
+    that reaches the image parser ([#8](https://github.com/iscc/iscc-tika/issues/8)). GraalVM CE
+    does not support AWT in native-image on macOS; the native library is now built with Bellsoft
+    Liberica NIK, which ships AWT/ImageIO support: NIK 24.1.1 (JDK 23) on macOS — the NIK 25 AWT
+    loader gates the statically linked macOS toolkit behind `JVM_IsStaticallyLinked()`, which is
+    false for shared libraries, so it dlopens a `libawt_lwawt.dylib` that is never shipped — and NIK
+    25.0.4 (JDK 25.0.4) on Linux, where the required AWT libraries are bundled into the wheel.
+    Windows continues to build with GraalVM CE, which supports AWT there.
+- Added `linux/aarch64` wheels (`manylinux_2_28_aarch64`), built on native ARM runners — e.g. for
+    AWS Graviton.
+- Upgraded Apache Tika 3.3.0 → 3.3.2.
+- Added the missing `pData` field to the `java.awt.image.ColorModel` reflection configuration,
+    avoiding a `NoSuchFieldError` during AWT color model initialization (ported from
+    ask-felix/extractous).
+- Release wheels are now smoke-tested on every published platform (linux x86_64/aarch64, macOS
+    arm64, Windows x64) including an embedded-image regression test; 0.5.0 wheels were only ever
+    tested on Linux, which is how the macOS crash shipped unnoticed.
+- Centralized the native-image JDK selection per platform in `setup_tika_native.py` (0.5.0 built
+    Linux and Windows wheels with GraalVM 23 but macOS with GraalVM 25, depending on which CI path
+    ran).
+- Raised timeouts on OCR-heavy tests so slow machines can complete them.
 
 ## 0.5.0 - 2026-04-14
 
