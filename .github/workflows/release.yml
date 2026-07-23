@@ -181,6 +181,9 @@ jobs:
   test-wheels:
     name: Test wheel (${{ matrix.os }}, Python ${{ matrix.python-version }})
     needs: [build-wheels]
+    # Run in test-build mode too: the skipped validate job otherwise propagates
+    # through the needs chain and silently skips wheel testing
+    if: ${{ !cancelled() && !failure() }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
