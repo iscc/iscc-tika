@@ -2,12 +2,27 @@
 
 ## Unreleased
 
+- **Breaking:** The default `extract_string_max_length` is now 10,000,000 instead of 500,000, so
+    `extract_*_to_string` returns the full text of long documents such as books (a typical novel has
+    0.5–1 million characters). The limit counts UTF-16 code units. A negative value now disables the
+    limit; previously only `-1` did, as Tika handles no other negative value.
+- Added truncation reporting: when `extract_*_to_string` cuts text off at the limit, the metadata
+    holds `X-TIKA:EXCEPTION:write_limit_reached: ["true"]`, exported as the `WRITE_LIMIT_REACHED`
+    constant in Rust and Python. Truncation was previously silent. Metadata-only extraction never
+    sets the key. A cut that would split a character outside the Basic Multilingual Plane now ends
+    before that character.
 - Fixed extracted text and metadata replacing every character outside the Basic Multilingual Plane —
-    emoji, CJK extension ideographs, musical symbols — with `U+FFFD`. JNI's `GetStringUTFChars`
-    returns modified UTF-8, which encodes those characters as a CESU-8 surrogate pair and `U+0000`
-    as an overlong `C0 80` sequence; both are ill-formed in standard UTF-8. The JNI string buffer
-    was decoded as plain UTF-8, so the surrogate pair was discarded. Java strings are now decoded as
-    modified UTF-8, keeping the lossy UTF-8 conversion as a fallback for malformed buffers.
+    emoji, CJK extension ideographs, musical symbols — with six `U+FFFD`. JNI's `GetStringUTFChars`
+    returns modified UTF-8, which encodes those characters as a CESU-8 surrogate pair that plain
+    UTF-8 decoding rejects. Java strings are now read as UTF-16 code units; an unpaired surrogate,
+    which Java strings can contain, becomes a single `U+FFFD` without affecting the rest of the
+    string.
+- **Behavior change:** `U+0000` in extracted text and metadata now arrives as a NUL character
+    instead of two `U+FFFD`, matching the streaming `extract_*` functions. Strip it before storing
+    text in systems that reject NUL, such as PostgreSQL `text` columns.
+- Fixed metadata keys containing an unpaired surrogate losing their values: values are now looked up
+    with the original Java key instead of a re-encoded copy of the decoded key.
+- CI runs the Rust test suite and checks pull requests targeting `develop`.
 
 ## 0.6.0 - 2026-07-23
 
