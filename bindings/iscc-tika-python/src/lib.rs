@@ -59,5 +59,8 @@ fn _iscc_tika(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<OfficeParserConfig>()?;
     m.add_class::<TesseractOcrConfig>()?;
 
+    // Metadata key flagging text cut off at the extract_string_max_length
+    m.add("WRITE_LIMIT_REACHED", ecore::WRITE_LIMIT_REACHED)?;
+
     Ok(())
 }

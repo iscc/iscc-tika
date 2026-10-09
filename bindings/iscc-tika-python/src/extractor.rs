@@ -109,8 +109,11 @@ impl Extractor {
         Self(ecore::Extractor::new())
     }
 
-    /// Set the maximum length of the extracted text. Used only for extract_to_string functions
-    /// Default: 500_000
+    /// Set the maximum length of the extracted text in UTF-16 code units (characters outside
+    /// the Basic Multilingual Plane count as two). A negative value disables the limit.
+    /// Used only for extract_to_string functions, which flag truncated text with the
+    /// `WRITE_LIMIT_REACHED` metadata key.
+    /// Default: 10_000_000
     pub fn set_extract_string_max_length(&self, max_length: i32) -> Self {
         let inner = self.0.clone().set_extract_string_max_length(max_length);
         Self(inner)

@@ -229,6 +229,7 @@ public class TikaNativeMain {
             handlerForParser = new BodyContentHandler(handler);
         }
 
+        boolean limitReached = false;
         try {
             final TikaConfig config = TikaConfig.getDefaultConfig();
             final ParseContext parsecontext = new ParseContext();
@@ -249,10 +250,30 @@ public class TikaNativeMain {
                 // This should never happen with BodyContentHandler...
                 throw new TikaException("Unexpected SAX processing failure", e);
             }
+            limitReached = true;
         } finally {
             stream.close();
         }
-        return handler.toString();
+        return limitedContent(handler, limitReached, metadata);
+    }
+
+    /**
+     * Returns the text collected by a write-limited handler. When the write limit was reached,
+     * flags the truncation in the metadata and drops a trailing high surrogate: the limit counts
+     * UTF-16 units, so the cut can split a supplementary character in half.
+     */
+    private static String limitedContent(
+            ContentHandler handler, boolean limitReached, Metadata metadata) {
+        final String content = handler.toString();
+        if (!limitReached) {
+            return content;
+        }
+        metadata.set(TikaCoreProperties.WRITE_LIMIT_REACHED, true);
+        final int end = content.length();
+        if (end > 0 && Character.isHighSurrogate(content.charAt(end - 1))) {
+            return content.substring(0, end - 1);
+        }
+        return content;
     }
 
 
@@ -499,6 +520,7 @@ public class TikaNativeMain {
         ctx.set(OfficeParserConfig.class, officeConfig);
         ctx.set(TesseractOCRConfig.class, tesseractConfig);
 
+        boolean limitReached = false;
         File file = path.toFile();
         try (org.apache.commons.compress.archivers.zip.ZipFile zf =
                      org.apache.commons.compress.archivers.zip.ZipFile.builder()
@@ -527,6 +549,7 @@ public class TikaNativeMain {
                     parser.parse(is, nested, itemMeta, ctx);
                 } catch (SAXException sx) {
                     if (WriteLimitReachedException.isWriteLimitReached(sx)) {
+                        limitReached = true;
                         break;
                     }
                     metadata.add("X-TIKA:warning",
@@ -540,7 +563,7 @@ public class TikaNativeMain {
                 }
             }
         }
-        return handler.toString();
+        return limitedContent(handler, limitReached, metadata);
     }
 
     /** Resolves an OPF href against its parent directory, collapsing ".." segments. */

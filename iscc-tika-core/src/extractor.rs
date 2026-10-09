@@ -8,6 +8,10 @@ use strum_macros::{Display, EnumString};
 /// Metadata type alias
 pub type Metadata = HashMap<String, Vec<String>>;
 
+/// Metadata key that `extract_*_to_string` sets to `"true"` when the extracted text was cut
+/// off at the extractor's `extract_string_max_length`.
+pub const WRITE_LIMIT_REACHED: &str = "X-TIKA:EXCEPTION:write_limit_reached";
+
 /// CharSet enum of all supported encodings
 #[derive(Debug, Clone, Default, Copy, PartialEq, Eq, Hash, Display, EnumString)]
 #[allow(non_camel_case_types)]
@@ -71,7 +75,7 @@ pub struct Extractor {
 impl Default for Extractor {
     fn default() -> Self {
         Self {
-            extract_string_max_length: 500_000, // 500KB
+            extract_string_max_length: 10_000_000,
             encoding: CharSet::UTF_8,
             pdf_config: PdfParserConfig::default(),
             office_config: OfficeParserConfig::default(),
@@ -86,10 +90,14 @@ impl Extractor {
         Self::default()
     }
 
-    /// Set the maximum length of the extracted text. Used only for extract_to_string functions
-    /// Default: 500_000
+    /// Set the maximum length of the extracted text in UTF-16 code units (characters outside
+    /// the Basic Multilingual Plane count as two). A negative value disables the limit.
+    /// Used only for extract_to_string functions, which flag truncated text with the
+    /// [`WRITE_LIMIT_REACHED`] metadata key.
+    /// Default: 10_000_000
     pub fn set_extract_string_max_length(mut self, max_length: i32) -> Self {
-        self.extract_string_max_length = max_length;
+        // Tika disables its write limit only for exactly -1
+        self.extract_string_max_length = max_length.max(-1);
         self
     }
 
@@ -213,44 +221,49 @@ impl Extractor {
     /// If a caller needs a specific key that isn't present, fall back to
     /// `extract_file_to_string` and discard the text.
     pub fn extract_file_metadata(&self, file_path: &str) -> ExtractResult<Metadata> {
-        let (_, metadata) = tika::parse_file_to_string(
+        metadata_only(tika::parse_file_to_string(
             file_path,
             0,
             &self.pdf_config,
             &self.office_config,
             &self.ocr_config,
             false,
-        )?;
-        Ok(metadata)
+        ))
     }
 
     /// Extracts only metadata from a byte buffer, skipping full text extraction for speed.
     /// Best-effort: see `extract_file_metadata` for contract details.
     pub fn extract_bytes_metadata(&self, buffer: &[u8]) -> ExtractResult<Metadata> {
-        let (_, metadata) = tika::parse_bytes_to_string(
+        metadata_only(tika::parse_bytes_to_string(
             buffer,
             0,
             &self.pdf_config,
             &self.office_config,
             &self.ocr_config,
             false,
-        )?;
-        Ok(metadata)
+        ))
     }
 
     /// Extracts only metadata from a URL, skipping full text extraction for speed.
     /// Best-effort: see `extract_file_metadata` for contract details.
     pub fn extract_url_metadata(&self, url: &str) -> ExtractResult<Metadata> {
-        let (_, metadata) = tika::parse_url_to_string(
+        metadata_only(tika::parse_url_to_string(
             url,
             0,
             &self.pdf_config,
             &self.office_config,
             &self.ocr_config,
             false,
-        )?;
-        Ok(metadata)
+        ))
     }
+}
+
+/// Keeps the metadata of a zero-length text extraction, dropping the write-limit flag that
+/// the zero limit sets.
+fn metadata_only(result: ExtractResult<(String, Metadata)>) -> ExtractResult<Metadata> {
+    let (_, mut metadata) = result?;
+    metadata.remove(WRITE_LIMIT_REACHED);
+    Ok(metadata)
 }
 
 #[cfg(test)]
