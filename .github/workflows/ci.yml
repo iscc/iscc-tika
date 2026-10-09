@@ -34,21 +34,23 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       # .cargo/config.toml links with clang + mold, matching local builds.
       - name: Install linker
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends clang mold
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends
+          clang mold
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: iscc-tika-core -> target
       # build.rs obtains libtika_native via setup_tika_native.py (Gradle native
       # image). There is no published prebuilt library; cache the one this job
       # builds so the next run reuses it. cargo test puts that libs directory
-      # on LD_LIBRARY_PATH. #[ignore] OCR tests stay skipped.
-      - uses: actions/cache@v4
+      # on LD_LIBRARY_PATH. Ignored (OCR) tests stay skipped.
+      - uses: actions/cache/restore@v6
         id: tika-native
         with:
           path: |
             iscc-tika-core/target/debug/build/iscc-tika-*/out/libs
             iscc-tika-core/target/debug/build/iscc-tika-*/out/tika-native
-          key: tika-native-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('iscc-tika-core/tika-native/**', 'iscc-tika-core/setup_tika_native.py', 'iscc-tika-core/build.rs') }}
+          key: tika-native-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('iscc-tika-core/tika-native/**',
+            'iscc-tika-core/setup_tika_native.py', 'iscc-tika-core/build.rs') }}
       - name: Reuse cached native library
         if: steps.tika-native.outputs.cache-hit == 'true'
         run: |
@@ -63,6 +65,16 @@ jobs:
           # setup_tika_native.py rebuild. Touch the copy so an unchanged image
           # is kept.
           find "${dirs[@]}" -type f -exec touch {} +
+      - name: Build tests
+        run: cargo test --manifest-path iscc-tika-core/Cargo.toml --no-run
+      # Save before running the tests so a failing test keeps the native build.
+      - uses: actions/cache/save@v6
+        if: steps.tika-native.outputs.cache-hit != 'true'
+        with:
+          path: |
+            iscc-tika-core/target/debug/build/iscc-tika-*/out/libs
+            iscc-tika-core/target/debug/build/iscc-tika-*/out/tika-native
+          key: ${{ steps.tika-native.outputs.cache-primary-key }}
       - name: cargo test
         run: cargo test --manifest-path iscc-tika-core/Cargo.toml
   build-test-wheel:
