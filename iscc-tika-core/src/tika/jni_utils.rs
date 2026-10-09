@@ -5,7 +5,6 @@ use crate::Metadata;
 use jni::errors::jni_error_code_to_result;
 use jni::objects::{JByteBuffer, JObject, JObjectArray, JString, JValue, JValueOwned};
 use jni::{sys, JNIEnv, JavaVM};
-use std::collections::HashMap;
 
 /// Calls a static method and prints any thrown exceptions to stderr
 pub fn jni_new_direct_buffer<'local>(
@@ -80,17 +79,40 @@ pub fn jni_new_string_as_jvalue<'local>(
     Ok(JValueOwned::from(jstring))
 }
 
-/// Converts a java object to a rust string
+/// Converts a java string object to a rust string
+///
+/// Reads the UTF-16 code units and replaces each unpaired surrogate with U+FFFD. The modified
+/// UTF-8 of `GetStringUTFChars` cannot be decoded at all once it holds an unpaired surrogate,
+/// which would garble every supplementary character of the string.
 pub fn jni_jobject_to_string<'local>(
     env: &mut JNIEnv<'local>,
     jobject: JObject<'local>,
 ) -> ExtractResult<String> {
-    let jstring_output = JString::from(jobject);
-    let javastr_output = unsafe { env.get_string_unchecked(&jstring_output)? };
-    let output_str = javastr_output.to_string_lossy();
-    //let output_str = javastr_output.to_str().map_err(Error::Utf8Error)?;
+    if jobject.is_null() {
+        return Err(Error::JniError(jni::errors::Error::NullPtr(
+            "jni_jobject_to_string",
+        )));
+    }
+    let raw_env = env.get_raw();
+    let raw_string = jobject.as_raw();
+    // SAFETY: raw_env is the valid environment of the current thread.
+    let functions = unsafe { &**raw_env };
+    let get_length = functions
+        .GetStringLength
+        .ok_or(Error::JniEnvCall("JNI GetStringLength unavailable"))?;
+    let get_region = functions
+        .GetStringRegion
+        .ok_or(Error::JniEnvCall("JNI GetStringRegion unavailable"))?;
+    // SAFETY: raw_string is a live java.lang.String reference; the region requested is
+    // exactly the string's length and the buffer holds that many code units.
+    let units = unsafe {
+        let length = get_length(raw_env, raw_string);
+        let mut units = vec![0u16; length as usize];
+        get_region(raw_env, raw_string, 0, length, units.as_mut_ptr());
+        units
+    };
 
-    Ok(output_str.to_string())
+    Ok(String::from_utf16_lossy(&units))
 }
 
 /// Converts a Java String[] to a Rust Vec<String>
@@ -117,28 +139,33 @@ pub fn jni_tika_metadata_to_rust_metadata<'local>(
     env: &mut JNIEnv<'local>,
     j_tika_metadata_object: JObject<'local>,
 ) -> ExtractResult<Metadata> {
-    let j_keys_names = env
-        .call_method(
+    let j_names = JObjectArray::from(
+        env.call_method(
             &j_tika_metadata_object,
             "names",
             "()[Ljava/lang/String;",
             &[],
         )?
-        .l()?;
-    let keys_names = jni_jobject_array_to_vec(env, j_keys_names)?;
-    let mut metadata = HashMap::new();
-    for key_name in keys_names.iter() {
-        let j_key_name = jni_new_string_as_jvalue(env, key_name)?;
-        let j_obj_array_name_metadata = env
+        .l()?,
+    );
+    let names_length = env.get_array_length(&j_names)?;
+    let mut metadata = Metadata::new();
+    for i in 0..names_length {
+        // Look values up with the Java key itself: a key holding an unpaired surrogate does
+        // not survive a round trip through a Rust string.
+        let j_name = env.get_object_array_element(&j_names, i)?;
+        let j_values = env
             .call_method(
                 &j_tika_metadata_object,
                 "getValues",
                 "(Ljava/lang/String;)[Ljava/lang/String;",
-                &[(&j_key_name).into()],
+                &[(&j_name).into()],
             )?
             .l()?;
-        let key_metadata = jni_jobject_array_to_vec(env, j_obj_array_name_metadata)?;
-        metadata.insert(key_name.to_string(), key_metadata);
+        let values = jni_jobject_array_to_vec(env, j_values)?;
+        let name = jni_jobject_to_string(env, j_name)?;
+        // Distinct Java keys can decode to the same Rust key; keep the values of both.
+        metadata.entry(name).or_default().extend(values);
     }
     Ok(metadata)
 }
@@ -261,3 +288,54 @@ pub fn create_vm_isolate() -> JavaVM {
 //
 //     Ok(output)
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tika::parse::vm;
+
+    /// Creates a Java string from raw UTF-16 code units, which may hold unpaired surrogates.
+    fn new_utf16_string<'local>(env: &mut JNIEnv<'local>, units: &[u16]) -> JObject<'local> {
+        let raw_env = env.get_raw();
+        let new_string = unsafe { (**raw_env).NewString }.unwrap();
+        let length = units.len() as sys::jsize;
+        unsafe { JObject::from_raw(new_string(raw_env, units.as_ptr(), length)) }
+    }
+
+    /// Passes UTF-16 code units through a Java string and decodes them back.
+    fn round_trip(units: &[u16]) -> String {
+        let mut env = vm().attach_current_thread().unwrap();
+        let j_string = new_utf16_string(&mut env, units);
+        jni_jobject_to_string(&mut env, j_string).unwrap()
+    }
+
+    #[test]
+    fn test_jobject_to_string_keeps_supplementary_characters() {
+        let text = "Hello é一 😀𠀋𝄞";
+        assert_eq!(round_trip(&text.encode_utf16().collect::<Vec<_>>()), text);
+    }
+
+    #[test]
+    fn test_jobject_to_string_replaces_only_unpaired_surrogates() {
+        let mut units: Vec<u16> = "😀 ".encode_utf16().collect();
+        // A lone low surrogate, a space and a trailing lone high surrogate.
+        units.extend([0xDC00, 0x20, 0xD83D]);
+        assert_eq!(round_trip(&units), "😀 \u{FFFD} \u{FFFD}");
+    }
+
+    #[test]
+    fn test_jobject_to_string_keeps_nul() {
+        assert_eq!(round_trip(&[0x61, 0x00, 0x62]), "a\0b");
+    }
+
+    #[test]
+    fn test_jobject_to_string_empty() {
+        assert_eq!(round_trip(&[]), "");
+    }
+
+    #[test]
+    fn test_jobject_to_string_rejects_null() {
+        let mut env = vm().attach_current_thread().unwrap();
+        assert!(jni_jobject_to_string(&mut env, JObject::null()).is_err());
+    }
+}

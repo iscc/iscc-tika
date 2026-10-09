@@ -8,16 +8,21 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # Test fixtures are byte-exact inputs: never rewrite them.
       - id: mixed-line-ending
         args: [--fix=lf]
+        exclude: ^test_files/
       - id: end-of-file-fixer
+        exclude: ^test_files/
       - id: trailing-whitespace
+        exclude: ^test_files/
       - id: check-yaml
       - id: check-json
       - id: check-toml
       - id: check-added-large-files
         args: [--maxkb=256]
       - id: fix-byte-order-marker
+        exclude: ^test_files/
 
   # Markdown formatting
   - repo: https://github.com/executablebooks/mdformat
