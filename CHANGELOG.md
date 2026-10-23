@@ -23,8 +23,12 @@
 - Fixed metadata keys containing an unpaired surrogate losing their values: values are now looked up
     with the original Java key instead of a re-encoded copy of the decoded key.
 - CI runs the Rust test suite and checks pull requests targeting `develop`.
-- Added the `TIKA_VERSION` constant in Rust and Python holding the bundled Apache Tika version
-    (`"3.3.2"`), read at build time from `tika-native/build.gradle`.
+- Upgraded Apache Tika 3.3.2 → 3.3.3. PDF bookmark outlines and OneNote files are now parsed with
+    bounded recursion; in the native library a stack overflow crashes the host process. OneNote
+    extraction follows document order, and PDFs with a print job ticket before the `%PDF-` header
+    are detected as PDF instead of `text/x-matlab`.
+- Added the `TIKA_VERSION` constant in Rust and Python holding the bundled Apache Tika version, read
+    at build time from `tika-native/build.gradle`.
 - Fixed DOCX files with numbering overrides (`w:lvlOverride`) failing to parse: the native image
     lacked reflection metadata for the `CTNumLvlImpl` constructor (#14).
 

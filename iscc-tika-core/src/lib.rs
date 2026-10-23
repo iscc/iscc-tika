@@ -83,7 +83,7 @@
 /// Default buffer size
 pub const DEFAULT_BUF_SIZE: usize = 32768;
 
-/// Version of the Apache Tika release compiled into the native library, e.g. `"3.3.2"`.
+/// Version of the Apache Tika release compiled into the native library, as `major.minor.patch`.
 pub const TIKA_VERSION: &str = env!("TIKA_VERSION");
 
 // errors module
