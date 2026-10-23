@@ -4457,6 +4457,17 @@
                     ]
                 }
             ],
+            "type": "org.openxmlformats.schemas.wordprocessingml.x2006.main.impl.CTNumLvlImpl"
+        },
+        {
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "org.apache.xmlbeans.SchemaType"
+                    ]
+                }
+            ],
             "type": "org.openxmlformats.schemas.wordprocessingml.x2006.main.impl.CTNumPrImpl"
         },
         {
