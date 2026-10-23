@@ -62,5 +62,8 @@ fn _iscc_tika(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Metadata key flagging text cut off at the extract_string_max_length
     m.add("WRITE_LIMIT_REACHED", ecore::WRITE_LIMIT_REACHED)?;
 
+    // Version of the Apache Tika release compiled into the native library
+    m.add("TIKA_VERSION", ecore::TIKA_VERSION)?;
+
     Ok(())
 }

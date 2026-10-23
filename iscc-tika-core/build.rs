@@ -1,14 +1,19 @@
 use std::env;
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn main() {
+    let root_dir = env::var("CARGO_MANIFEST_DIR").map(PathBuf::from).unwrap();
+
+    // Expose the bundled Tika version to the crate as the `TIKA_VERSION` constant
+    println!("cargo:rustc-env=TIKA_VERSION={}", tika_version(&root_dir));
+
     // Exit early when building docs
     if env::var("DOCS_RS").is_ok() {
         return;
     }
 
-    let root_dir = env::var("CARGO_MANIFEST_DIR").map(PathBuf::from).unwrap();
     let out_dir = env::var("OUT_DIR").map(PathBuf::from).unwrap();
     let libs_out_dir = out_dir.join("libs");
 
@@ -67,6 +72,19 @@ fn main() {
         "tika_native"
     };
     println!("cargo:rustc-link-lib=dylib={lib_name}");
+}
+
+/// Read the Apache Tika version from the `tikaVersion` definition in `tika-native/build.gradle`.
+fn tika_version(root_dir: &Path) -> String {
+    let gradle_file = root_dir.join("tika-native").join("build.gradle");
+    let gradle = fs::read_to_string(&gradle_file)
+        .unwrap_or_else(|e| panic!("Failed to read {}: {e}", gradle_file.display()));
+    gradle
+        .lines()
+        .find_map(|line| line.trim().strip_prefix("def tikaVersion = \""))
+        .and_then(|rest| rest.split('"').next())
+        .map(str::to_string)
+        .unwrap_or_else(|| panic!("No tikaVersion definition in {}", gradle_file.display()))
 }
 
 /// Find a Python 3 interpreter.

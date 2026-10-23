@@ -97,6 +97,12 @@ mise run version:check
 
 Both versions must match. If there is a mismatch, diagnose and fix, then re-run the check.
 
+### Step 2.4 — Record the bundled Tika version
+
+Read the Tika version from the `def tikaVersion = "..."` line in
+`iscc-tika-core/tika-native/build.gradle`. Add a row for the new release at the top of the "Bundled
+Apache Tika version" table in `README.md`.
+
 ## Phase 3: Quality Gates
 
 ### Step 3.1 — Format
@@ -147,6 +153,7 @@ find which files were actually modified, then stage only those. Expected candida
 iscc-tika-core/Cargo.toml
 iscc-tika-core/Cargo.lock
 bindings/iscc-tika-python/pyproject.toml
+README.md
 ```
 
 Do NOT use `git add -A` which can stage untracked files from `.claude/` and other directories.

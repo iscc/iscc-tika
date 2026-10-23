@@ -237,6 +237,18 @@ fn main() {
 | **Images**           | PNG, JPEG, TIFF, BMP, GIF, ICO, PSD, SVG | Extracts metadata; optional opt-in OCR         |
 | **E-Mail**           | EML, MSG, MBOX, PST                      | Extracts content, headers, and attachments     |
 
+## Bundled Apache Tika version
+
+Each release compiles one Apache Tika release into its native library. iscc-tika version numbers
+describe iscc-tika's own API and do not follow Tika's. The bundled Tika version is available as
+`TIKA_VERSION` in Python (`iscc_tika.TIKA_VERSION`) and Rust (`iscc_tika::TIKA_VERSION`).
+
+| **iscc-tika** | **Apache Tika** |
+| ------------- | --------------- |
+| 0.6.0         | 3.3.2           |
+| 0.5.0         | 3.3.0           |
+| 0.4.0         | 2.9.2           |
+
 ## Development
 
 ### Prerequisites
