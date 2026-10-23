@@ -31,6 +31,8 @@
     at build time from `tika-native/build.gradle`.
 - Fixed DOCX files with numbering overrides (`w:lvlOverride`) failing to parse: the native image
     lacked reflection metadata for the `CTNumLvlImpl` constructor (#14).
+- Fixed MS Access databases (`.mdb`, `.accdb`) failing to parse: the native image lacked the
+    jackcess index code files needed to read table indexes.
 
 ## 0.6.0 - 2026-07-23
 

@@ -5379,6 +5379,9 @@
             "glob": "log4j2.system.properties"
         },
         {
+            "glob": "com/healthmarketscience/jackcess/index_*.txt"
+        },
+        {
             "glob": "org/apache/fontbox/cmap/**"
         },
         {
